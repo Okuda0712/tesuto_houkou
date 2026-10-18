@@ -1,0 +1,17 @@
+{
+  "name": "鎌倉市 観光客向け災害避難支援システム",
+  "short_name": "鎌倉防災ナビ",
+  "description": "OpenStreetMap、ブラウザGPS、公式ハザードタイル、歩行者経路探索を使用した授業発表用の災害避難支援プロトタイプ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f6f2",
+  "theme_color": "#187a53",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

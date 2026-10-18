@@ -1,0 +1,1217 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#143f35">
+  <meta name="description" content="鎌倉市を訪れる観光客向けの災害避難支援Webサイト。GPS、OpenStreetMap、ハザードマップポータルサイトの公式タイルを用いた授業用プロトタイプです。">
+  <title>鎌倉市 観光客向け災害避難支援システム</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="leaflet.css">
+  <link rel="stylesheet" href="style.css?v=35">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <!-- Leaflet / アプリ本体 -->
+  <script src="leaflet.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">本文へ移動</a>
+  <header class="site-header">
+    <div class="header-left">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div class="brand-copy">
+        <h1 data-i18n="siteTitle">鎌倉市 災害避難支援ポータル</h1>
+        <p data-i18n="brandKicker">観光客向け防災情報</p>
+      </div>
+    </div>
+    <div class="header-alert" id="emergency">
+      <span aria-hidden="true">⚠</span>
+      <strong data-i18n="demoLabel">授業発表用デモ</strong>
+      <span data-i18n="demoText">
+        実際の災害時は、鎌倉市・気象庁・警察・消防などの最新情報に従ってください。
+      </span>
+    </div>
+    <div class="utility-actions">
+      <button
+        class="header-action-button"
+        id="headerTopButton"
+        type="button"
+        data-i18n="backTop">
+        トップへ
+      </button>
+      <button
+        class="header-action-button"
+        id="headerGpsButton"
+        type="button"
+        data-i18n="forceGps">
+        GPSを再取得
+      </button>
+
+      <details class="header-menu" id="headerMenu">
+        <summary data-i18n="menuTitle">メニュー</summary>
+
+        <div class="header-menu-panel">
+          <button type="button" data-screen-target="map" data-i18n="navMap">
+            現在地・避難経路
+          </button>
+
+          <button type="button" data-screen-target="destinations" data-i18n="navCandidate">
+            避難先候補
+          </button>
+
+          <button type="button" data-screen-target="guidance" data-i18n="navScenario">
+            初期行動
+          </button>
+
+          <button type="button" data-screen-target="transport" data-i18n="navTransport">
+            交通情報
+          </button>
+
+          <button type="button" data-screen-target="report" data-i18n="navReport">
+            通行不可報告
+          </button>
+
+          <button type="button" data-screen-target="notifications" data-i18n="navNotifications">
+            通知
+          </button>
+
+          <button type="button" data-screen-target="offline" data-i18n="navOffline">
+            オフライン
+          </button>
+
+          <button type="button" data-screen-target="admin" data-i18n="navAdmin">
+            管理者デモ
+          </button>
+
+          <button type="button" data-screen-target="system" data-i18n="navSystem">
+            システム構成
+          </button>
+        </div>
+      </details>
+
+      <div class="language-switcher" aria-label="言語切替">
+        <button class="small-button language-button is-active" data-lang="ja" type="button">
+          日本語
+        </button>
+
+        <button class="small-button language-button" data-lang="en" type="button">
+          English
+        </button>
+
+        <button class="small-button language-button" data-lang="zh" type="button">
+          中文
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <div class="protocol-warning" id="localFileWarning" hidden>
+    <strong>このページを「ファイル」として直接開いています。</strong>
+    <span>
+      位置情報の許可保持とオフライン機能を有効にするには、
+      同梱の start_server.bat から起動してください。
+    </span>
+    <button type="button" id="closeProtocolWarning" aria-label="閉じる">×</button>
+  </div>
+
+  <main id="main">
+
+    <!-- ==============================
+         現在地・避難経路
+    =============================== -->
+    <section class="map-section screen-section" id="mapSection" data-screen="map">
+
+      <aside class="side-panel" data-side-tab="info">
+
+        <button class="panel-toggle" id="sidePanelToggle" type="button" aria-expanded="true" aria-controls="sidePanelContent">
+          閉じる ▽
+        </button>
+        <button class="panel-restore" id="sidePanelRestore" type="button" aria-expanded="false" aria-controls="sidePanelContent">
+          表示情報へ △
+        </button>
+        <div class="side-tabs" role="tablist" aria-label="左パネル表示">
+          <button class="side-tab is-active" id="infoTabButton" type="button" role="tab" aria-selected="true" data-side-tab="info">表示情報</button>
+          <button class="side-tab" id="routeTabButton" type="button" role="tab" aria-selected="false" data-side-tab="route">ルート検索</button>
+        </div>
+        <div class="side-panel-content" id="sidePanelContent">
+
+        <div class="side-brand">
+          <div class="brand-mark side" aria-hidden="true"></div>
+
+          <div>
+            <strong>鎌倉防災ナビ</strong>
+            <span>KAMAKURA BOSAI NAVI</span>
+          </div>
+        </div>
+
+
+        <nav class="side-nav" aria-label="画面メニュー">
+
+          <button
+            class="side-nav-item is-active"
+            type="button"
+            data-screen-target="map">
+            <span>⌂</span>
+            <strong data-i18n="navMap">現在地・避難経路</strong>
+          </button>
+
+          <div class="side-nav-hazard"><a class="side-nav-item" href="#" aria-expanded="false" aria-controls="hazardCheckGrid">
+            <span>◫</span>
+            <strong>ハザードマップ</strong>
+          </a><fieldset class="action-group hazard-check-fieldset">
+
+            <legend data-i18n="hazardLayer">
+              重ねる災害情報
+            </legend>
+
+            <div class="hazard-check-grid" id="hazardCheckGrid">
+
+              <label class="hazard-check">
+                <span data-hazard-label="tsunami">津波浸水想定</span>
+                <input
+                  type="checkbox"
+                  name="hazardLayer"
+                  value="tsunami"
+                  checked>
+                <i></i>
+              </label>
+
+              <label class="hazard-check">
+                <span data-hazard-label="flood">洪水浸水想定</span>
+                <input
+                  type="checkbox"
+                  name="hazardLayer"
+                  value="flood">
+                <i></i>
+              </label>
+
+              <label class="hazard-check">
+                <span data-hazard-label="inland">内水浸水想定</span>
+                <input
+                  type="checkbox"
+                  name="hazardLayer"
+                  value="inland">
+                <i></i>
+              </label>
+
+              <label class="hazard-check">
+                <span data-hazard-label="hightide">高潮浸水想定</span>
+                <input
+                  type="checkbox"
+                  name="hazardLayer"
+                  value="hightide">
+                <i></i>
+              </label>
+
+              <label class="hazard-check">
+                <span data-hazard-label="landslide">土砂災害警戒区域</span>
+                <input
+                  type="checkbox"
+                  name="hazardLayer"
+                  value="landslide">
+                <i></i>
+              </label>
+
+            </div>
+
+            <button
+              class="clear-hazard-button"
+              id="clearHazardsButton"
+              type="button"
+              data-i18n="clearHazards">
+              すべて解除
+            </button>
+
+          </fieldset></div>
+
+          <a class="side-nav-item" href="#tsunamiPointPanel">
+            <span>▣</span>
+            <strong data-i18n="navCandidate">避難先候補</strong>
+          </a>
+
+          <button
+            class="side-nav-item"
+            type="button"
+            data-screen-target="transport">
+            <span>鉄</span>
+            <strong data-i18n="navTransport">交通情報</strong>
+          </button>
+
+          <button
+            class="side-nav-item"
+            type="button"
+            data-screen-target="report">
+            <span>!</span>
+            <strong data-i18n="navReport">通行不可報告</strong>
+          </button>
+
+          <button
+            class="side-nav-item"
+            type="button"
+            data-screen-target="guidance">
+            <span>?</span>
+            <strong data-i18n="navScenario">初期行動</strong>
+          </button>
+
+          <button
+            class="side-nav-item"
+            type="button"
+            data-screen-target="admin">
+            <span>管</span>
+            <strong data-i18n="navAdmin">管理者デモ</strong>
+          </button>
+
+        </nav>
+
+        <div class="action-panel" id="hazardControl">
+
+          <button
+            class="primary-button"
+            id="locateButton"
+            type="button">
+            <span aria-hidden="true">⌖</span>
+            <span data-i18n="getLocation">GPSで現在地を取得</span>
+          </button>
+
+          <button
+            class="secondary-button"
+            id="trackButton"
+            type="button"
+            data-i18n="startTracking">
+            現在地の追跡を開始
+          </button>
+
+          <button
+            class="secondary-button"
+            id="resetMapButton"
+            type="button"
+            data-i18n="resetMap">
+            鎌倉市全体を表示
+          </button>
+
+          <button
+            class="secondary-button"
+            id="offlinePrepareButton"
+            type="button"
+            data-i18n="prepareOffline">
+            現在の表示をオフライン保存
+          </button>
+
+          <button
+            class="scenario-button"
+            id="scenarioDemoButton"
+            type="button"
+            data-i18n="startScenario">
+            由比ヶ浜 津波デモ開始
+          </button>
+
+          <details class="demo-controls">
+
+            <summary data-i18n="demoLocationTitle">
+              デモ位置を使う
+            </summary>
+
+            <div>
+
+              <button
+                class="text-button"
+                id="demoStationButton"
+                type="button"
+                data-i18n="useStationDemo">
+                鎌倉駅を現在地にする
+              </button>
+
+              <button
+                class="text-button"
+                id="demoCoastButton"
+                type="button"
+                data-i18n="useCoastDemo">
+                由比ヶ浜付近を現在地にする
+              </button>
+
+            </div>
+
+          </details>
+
+        </div>
+
+        <div class="side-bottom">
+
+          <div class="side-language">
+            <span>日本語</span>
+            <span>⌄</span>
+          </div>
+
+          <div class="side-status">
+            <span data-i18n="networkLabel">通信状態</span>
+            <strong id="networkState">オンライン</strong>
+            <small id="gpsState">GPS未取得</small>
+          </div>
+
+        </div>
+        </div>
+
+      </aside>
+
+      <section class="center-stage">
+
+        <div class="map-card">
+
+          <div class="map-toolbar">
+
+            <div>
+              <strong id="hazardLayerName">津波浸水想定</strong>
+              <span id="mapModeLabel">
+                OpenStreetMap＋ハザードマップポータルサイト
+              </span>
+            </div>
+
+            <span
+              class="route-service-label"
+              id="routingState">
+              徒歩ルート：未計算
+            </span>
+
+          </div>
+
+          <div class="map-wrap">
+
+            <div class="legend-panel">
+
+              <strong>津波浸水想定</strong>
+
+              <ul>
+                <li>
+                  <span class="legend-color p1"></span>
+                  10.0m以上
+                </li>
+
+                <li>
+                  <span class="legend-color p2"></span>
+                  5.0～10.0m
+                </li>
+
+                <li>
+                  <span class="legend-color p3"></span>
+                  3.0～5.0m
+                </li>
+
+                <li>
+                  <span class="legend-color p4"></span>
+                  0.5～3.0m
+                </li>
+
+                <li>
+                  <span class="legend-color p5"></span>
+                  0.5m未満
+                </li>
+              </ul>
+
+            </div>
+
+            <div
+              id="map"
+              role="application"
+              aria-label="OpenStreetMapと災害リスクを表示する鎌倉市周辺地図">
+            </div>
+
+          </div>
+
+          <div class="map-footer">
+
+            <div class="location-detail" aria-live="polite">
+
+              <p id="locationMessage">
+                位置情報の利用を許可すると現在地を表示します。
+              </p>
+
+              <dl>
+
+                <div>
+                  <dt>緯度</dt>
+                  <dd id="latitudeValue">-</dd>
+                </div>
+
+                <div>
+                  <dt>経度</dt>
+                  <dd id="longitudeValue">-</dd>
+                </div>
+
+                <div>
+                  <dt>精度</dt>
+                  <dd id="accuracyValue">-</dd>
+                </div>
+
+              </dl>
+
+            </div>
+
+            <p class="map-note" data-i18n="mapNote">
+              オンライン中に表示した地図・ハザードと計算済みルートは、
+              オフラインでも再表示できます。新しい地域や新しい経路の取得には通信が必要です。
+            </p>
+
+          </div>
+
+        </div>
+
+        <section
+          class="status-grid"
+          id="statusCards"
+          aria-label="現在の状態">
+
+          <article class="status-card">
+            <span class="status-icon" aria-hidden="true">◎</span>
+            <div>
+              <p data-i18n="locationStatusLabel">現在地</p>
+              <strong id="locationSummary">未取得</strong>
+            </div>
+          </article>
+
+          <article class="status-card">
+            <span class="status-icon" aria-hidden="true">層</span>
+            <div>
+              <p data-i18n="selectedDisasterLabel">表示中のハザード</p>
+              <strong id="disasterSummary">津波浸水想定</strong>
+            </div>
+          </article>
+
+          <article class="status-card">
+            <span class="status-icon" aria-hidden="true">↗</span>
+            <div>
+              <p data-i18n="routeStatusLabel">徒歩経路</p>
+              <strong id="routeSummary">未選択</strong>
+            </div>
+          </article>
+
+        </section>
+
+      </section>
+
+      <aside class="right-panel">
+
+        <button class="panel-toggle" id="rightPanelToggle" type="button" aria-expanded="true" aria-controls="rightPanelContent">
+          閉じる ▽
+        </button>
+        <button class="panel-restore" id="rightPanelRestore" type="button" aria-expanded="false" aria-controls="rightPanelContent">
+          表示情報へ △
+        </button>
+        <div class="right-panel-content" id="rightPanelContent">
+
+        <div class="candidate-panel" id="candidatePanel">
+
+          <div class="candidate-heading">
+
+            <div>
+              <p class="eyebrow" data-i18n="candidateEyebrow">
+                EVACUATION DESTINATIONS
+              </p>
+              <h3 data-i18n="candidateTitle">避難先候補</h3>
+            </div>
+
+            <span class="count-badge" id="candidateCount">0</span>
+
+          </div>
+
+          <p class="candidate-note" data-i18n="candidateDisclaimer">
+            候補地は授業用デモです。実際の避難では自治体の指示と現地状況を優先してください。
+          </p>
+
+          <div
+            id="candidateList"
+            class="candidate-list"
+            aria-live="polite">
+
+            <div class="empty-state">
+              現在地を取得すると候補を表示します。
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="tsunami-point-panel" id="tsunamiPointPanel">
+
+          <div class="candidate-heading">
+
+            <div>
+              <p class="eyebrow">TSUNAMI SAFE POINTS</p>
+              <h3>津波避難ビル・高台</h3>
+            </div>
+
+            <label class="safe-point-toggle">
+              <input type="checkbox" id="safePointToggle" checked>
+              <span>地図に表示</span>
+            </label>
+
+          </div>
+
+          <p class="candidate-note">
+            避難先候補リストとは別に、津波避難ビル・避難空地・高台を
+            地図上へ表示します。到着時刻は現在地からの概算です。
+          </p>
+
+          <div
+            id="safePointList"
+            class="safe-point-list"
+            aria-live="polite">
+
+            <div class="empty-state">
+              現在地を取得すると到着目安を表示します。
+            </div>
+
+          </div>
+
+        </div>
+
+        </div>
+      </aside>
+
+      <button
+        class="visually-hidden"
+        id="heroLocateButton"
+        type="button"
+        data-i18n="locateNow">
+        現在地から避難先を確認
+      </button>
+
+    </section>
+
+
+    <!-- ==============================
+         初期行動
+    =============================== -->
+    <section
+      class="guidance-section screen-section"
+      id="scenario"
+      data-screen="guidance">
+
+      <div class="section-heading compact-heading">
+        <p class="eyebrow">FIRST ACTION</p>
+        <h2 data-i18n="guidanceTitle">
+          災害発生時の初期行動
+        </h2>
+      </div>
+
+      <div class="guidance-card" id="guidanceCard">
+
+        <div
+          class="guidance-icon"
+          id="guidanceIcon"
+          aria-hidden="true">
+          波
+        </div>
+
+        <div>
+          <span class="guidance-tag" id="guidanceTag">津波</span>
+
+          <h3 id="guidanceHeading">
+            海から離れ、高台へ向かってください
+          </h3>
+
+          <p id="guidanceText">
+            揺れがおさまったら、海岸や川沿いから離れ、
+            高台・津波避難ビルなど一時的に安全を確保できる場所へ移動します。
+          </p>
+        </div>
+
+      </div>
+
+      <div class="guide-grid">
+
+        <article>
+          <span>🏃</span>
+          <strong>高い場所へ避難する</strong>
+          <p>
+            海岸や川沿いから離れ、近くの高台や津波避難ビルへ移動します。
+          </p>
+        </article>
+
+        <article>
+          <span>👥</span>
+          <strong>周囲の人と声をかけ合う</strong>
+          <p>
+            ひとりではなく、周囲の人と確認しながら避難します。
+          </p>
+        </article>
+
+        <article>
+          <span>📱</span>
+          <strong>正確な情報を確認する</strong>
+          <p>
+            自治体・気象庁・警察・消防などの情報を優先します。
+          </p>
+        </article>
+
+        <article>
+          <span>🎒</span>
+          <strong>持ち出し品を確認する</strong>
+          <p>
+            必要なものを持ち、慌てずに安全な方向へ移動します。
+          </p>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- ==============================
+         交通情報
+    =============================== -->
+    <section
+      class="feature-section screen-section"
+      id="transportSection"
+      data-screen="transport">
+
+      <div class="feature-header">
+
+        <div>
+          <p class="eyebrow">TRANSPORT STATUS</p>
+          <h2 data-i18n="transportTitle">
+            交通機関の運行情報
+          </h2>
+        </div>
+
+        <span class="demo-badge" data-i18n="demoData">
+          デモデータ
+        </span>
+
+      </div>
+
+      <p class="feature-lead" data-i18n="transportLead">
+        JR・江ノ電などの運行状況を表示し、運休時には駅への集中を避ける判断材料にします。
+      </p>
+
+      <div class="transport-grid" id="transportList"></div>
+
+      <div class="feature-actions">
+
+        <button
+          class="primary-button inline-button"
+          id="transportDemoButton"
+          type="button"
+          data-i18n="toggleTransportDemo">
+          運休デモを切替
+        </button>
+
+        <button
+          class="secondary-button inline-button"
+          type="button"
+          data-screen-target="map"
+          data-i18n="backMap">
+          地図へ戻る
+        </button>
+
+      </div>
+
+      <div class="implementation-note">
+        <strong>実装方針</strong>
+        <span>
+          現在はデモデータ。最終構成では公共交通オープンデータ等のAPI連携を想定。
+        </span>
+      </div>
+
+    </section>
+
+
+    <!-- ==============================
+         通行不可報告
+    =============================== -->
+    <section
+      class="feature-section screen-section"
+      id="reportSection"
+      data-screen="report">
+
+      <div class="feature-header">
+
+        <div>
+          <p class="eyebrow">ROAD REPORT</p>
+
+          <h2 data-i18n="reportTitle">
+            通れない道などの報告
+          </h2>
+        </div>
+
+        <span
+          class="demo-badge"
+          data-i18n="prototypeLabel">
+          試作機能
+        </span>
+
+      </div>
+
+      <p class="feature-lead" data-i18n="reportLead">
+        現在地または地図上で地点を指定し、
+        通行不可・倒木・浸水などを報告します。
+        報告地点はルート評価に反映します。
+      </p>
+
+      <p id="reportTrackStatus" class="report-track-status" aria-live="polite">GPSで現在地を取得すると軌跡記録を開始します。移動後、記録した道から50m以内の地点を報告できます。</p>
+
+      <form class="report-form" id="reportForm">
+
+        <label>
+          <span data-i18n="reportTypeLabel">種類</span>
+
+          <select id="reportType">
+
+            <option value="blocked">
+              通行不可
+            </option>
+
+            <option value="flooded">
+              道路冠水
+            </option>
+
+            <option value="debris">
+              倒木・瓦礫
+            </option>
+
+            <option value="crowded">
+              著しい混雑
+            </option>
+
+          </select>
+        </label>
+
+        <label>
+          <span data-i18n="reportNoteLabel">
+            補足
+          </span>
+
+          <input
+            id="reportNote"
+            maxlength="80"
+            placeholder="例：倒木で歩道が塞がれている">
+        </label>
+
+        <div class="report-coordinates">
+
+          <label>
+            緯度
+            <input
+              id="reportLat"
+              inputmode="decimal">
+          </label>
+
+          <label>
+            経度
+            <input
+              id="reportLng"
+              inputmode="decimal">
+          </label>
+
+        </div>
+
+        <div class="feature-actions">
+
+          <button
+            class="secondary-button inline-button"
+            id="reportUseCurrentButton"
+            type="button"
+            data-i18n="useCurrentReport">
+            現在地を使う
+          </button>
+
+          <button
+            class="secondary-button inline-button"
+            id="reportPickMapButton"
+            type="button"
+            data-i18n="pickReportMap">
+            地図で地点指定
+          </button>
+
+          <button
+            class="primary-button inline-button"
+            type="submit"
+            data-i18n="submitReport">
+            報告を登録
+          </button>
+
+        </div>
+
+      </form>
+
+      <div
+        class="report-list"
+        id="reportList">
+      </div>
+
+    </section>
+
+
+    <!-- ==============================
+         通知
+    =============================== -->
+    <section
+      class="feature-section screen-section"
+      id="notificationsSection"
+      data-screen="notifications">
+
+      <div class="feature-header">
+
+        <div>
+          <p class="eyebrow">NOTIFICATIONS</p>
+          <h2 data-i18n="notificationTitle">
+            通知・警告
+          </h2>
+        </div>
+
+        <span
+          class="demo-badge"
+          data-i18n="prototypeLabel">
+          試作機能
+        </span>
+
+      </div>
+
+      <div
+        class="notification-list"
+        id="notificationList">
+      </div>
+
+      <div class="feature-actions">
+
+        <button
+          class="secondary-button inline-button"
+          type="button"
+          data-screen-target="map"
+          data-i18n="backMap">
+          地図へ戻る
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ==============================
+         オフライン
+    =============================== -->
+    <section
+      class="feature-section screen-section"
+      id="offlineSection"
+      data-screen="offline">
+
+      <div class="feature-header">
+
+        <div>
+          <p class="eyebrow">OFFLINE / PWA</p>
+
+          <h2 data-i18n="offlineLabTitle">
+            オフライン動作
+          </h2>
+        </div>
+
+        <span
+          class="demo-badge"
+          id="offlineNetworkBadge">
+          オンライン
+        </span>
+
+      </div>
+
+      <div class="offline-status-grid">
+
+        <article>
+          <span class="feature-icon">PWA</span>
+          <strong>Service Worker</strong>
+          <p data-i18n="offlineShellText">
+            HTML・CSS・JavaScriptなどのアプリ本体をキャッシュします。
+          </p>
+        </article>
+
+        <article>
+          <span class="feature-icon">DB</span>
+          <strong>IndexedDB / Local Storage</strong>
+          <p data-i18n="offlineDataText">
+            避難先状態・報告情報・計算済みルートなどを端末側へ保持します。
+          </p>
+        </article>
+
+        <article>
+          <span class="feature-icon">経</span>
+          <strong>GraphHopper / A*</strong>
+          <p data-i18n="offlineFutureText">
+            端末内の新規経路計算は設計・技術検証対象です。
+            現行デモでは保存済みルートを利用します。
+          </p>
+        </article>
+
+      </div>
+
+      <div
+        class="offline-metrics"
+        id="offlineMetrics">
+      </div>
+
+      <div class="feature-actions">
+
+        <button
+          class="primary-button inline-button"
+          id="offlinePanelSaveButton"
+          type="button"
+          data-i18n="prepareOffline">
+          現在の表示をオフライン保存
+        </button>
+
+        <button
+          class="secondary-button inline-button"
+          type="button"
+          data-screen-target="map"
+          data-i18n="backMap">
+          地図へ戻る
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ==============================
+         管理者
+    =============================== -->
+    <section
+      class="feature-section screen-section"
+      id="adminSection"
+      data-screen="admin">
+
+      <div class="feature-header">
+
+        <div>
+          <p class="eyebrow">ADMIN DEMO</p>
+
+          <h2 data-i18n="adminTitle">
+            総合防災課 管理者デモ
+          </h2>
+        </div>
+
+        <span
+          class="demo-badge"
+          data-i18n="demoData">
+          デモデータ
+        </span>
+
+      </div>
+
+      <p class="feature-lead" data-i18n="adminLead">
+        避難所の管理は開設ON/OFFに絞り、
+        道路混雑や利用者報告と組み合わせて避難先候補へ反映する試作です。
+      </p>
+
+      <div
+        class="admin-summary"
+        id="adminSummary">
+      </div>
+
+      <div class="feature-actions">
+
+        <button
+          class="primary-button inline-button"
+          id="congestionDemoButton"
+          type="button"
+          data-i18n="toggleCongestionDemo">
+          道路混雑デモを切替
+        </button>
+
+        <button
+          class="secondary-button inline-button"
+          id="adminResetButton"
+          type="button"
+          data-i18n="resetDemo">
+          デモ状態を初期化
+        </button>
+
+      </div>
+
+      <div
+        class="admin-shelter-list"
+        id="adminShelterList">
+      </div>
+
+    </section>
+
+
+    <!-- ==============================
+         システム構成
+    =============================== -->
+    <section
+      class="feature-section screen-section"
+      id="systemSection"
+      data-screen="system">
+
+      <div class="feature-header">
+
+        <div>
+          <p class="eyebrow">SYSTEM ARCHITECTURE</p>
+
+          <h2 data-i18n="systemTitle">
+            システム構成
+          </h2>
+        </div>
+
+      </div>
+
+      <div class="architecture-grid">
+
+        <article>
+          <strong>フロントエンド</strong>
+          <p>HTML / CSS / JavaScript</p>
+        </article>
+
+        <article>
+          <strong>地図</strong>
+          <p>Leaflet / OpenStreetMap</p>
+        </article>
+
+        <article>
+          <strong>現在地</strong>
+          <p>Geolocation API</p>
+        </article>
+
+        <article>
+          <strong>オンライン経路</strong>
+          <p>Valhalla / OSRM系歩行者ルーティング</p>
+        </article>
+
+        <article>
+          <strong>端末内保存</strong>
+          <p>IndexedDB / Cache API / Service Worker</p>
+        </article>
+
+        <article>
+          <strong>バックエンド想定</strong>
+          <p>Python / Flask / MySQL / SQLAlchemy</p>
+        </article>
+
+        <article>
+          <strong>将来のオフライン経路</strong>
+          <p>GraphHopper / A* 法</p>
+        </article>
+
+        <article>
+          <strong>公的データ</strong>
+          <p>
+            鎌倉市避難所 / ハザードマップポータル /
+            気象庁・交通API想定
+          </p>
+        </article>
+
+        <article>
+          <strong>通行不可報告</strong>
+          <p>Firebase Firestore</p>
+        </article>
+
+      </div>
+
+      <div class="feature-actions">
+
+        <button
+          class="secondary-button inline-button"
+          type="button"
+          data-screen-target="map"
+          data-i18n="backMap">
+          地図へ戻る
+        </button>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer class="site-footer">
+
+    <p>
+      鎌倉市向け災害避難支援システム開発プロジェクト
+    </p>
+
+    <p>
+      ※授業発表用プロトタイプ。
+      実際の避難判断には使用しないでください。
+    </p>
+
+    <p>
+      災害リスク情報：
+      <a
+        href="https://disaportal.gsi.go.jp/"
+        target="_blank"
+        rel="noopener">
+        ハザードマップポータルサイト
+      </a>
+    </p>
+
+  </footer>
+
+
+  <button
+    class="back-to-top"
+    id="backToTopButton"
+    type="button"
+    aria-label="ページ上部へ戻る">
+    ↑
+  </button>
+
+  <div
+    class="toast"
+    id="toast"
+    role="status"
+    aria-live="polite">
+  </div>
+
+  <script>
+    (() => {
+      const bindPanel = (panel, content, closeButton, restoreButton) => {
+        if (!panel || !content || !closeButton || !restoreButton) return;
+        const setCollapsed = (collapsed) => {
+          panel.classList.toggle('is-collapsed', collapsed);
+          closeButton.setAttribute('aria-expanded', String(!collapsed));
+          restoreButton.setAttribute('aria-expanded', String(collapsed));
+          window.setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+          }, 80);
+        };
+        closeButton.addEventListener('click', () => setCollapsed(true));
+        restoreButton.addEventListener('click', () => setCollapsed(false));
+      };
+      bindPanel(document.querySelector('.side-panel'), document.getElementById('sidePanelContent'), document.getElementById('sidePanelToggle'), document.getElementById('sidePanelRestore'));
+      bindPanel(document.querySelector('.right-panel'), document.getElementById('rightPanelContent'), document.getElementById('rightPanelToggle'), document.getElementById('rightPanelRestore'));
+      const sidePanel = document.querySelector('.side-panel');
+      const sideTabButtons = [...document.querySelectorAll('.side-tab')];
+      sideTabButtons.forEach((button) => button.addEventListener('click', () => {
+        const tab = button.dataset.sideTab;
+        sidePanel.dataset.sideTab = tab;
+        sidePanel.classList.remove('is-collapsed');
+        document.getElementById('sidePanelToggle')?.setAttribute('aria-expanded', 'true');
+        document.getElementById('sidePanelRestore')?.setAttribute('aria-expanded', 'false');
+        sideTabButtons.forEach((item) => {
+          const active = item === button;
+          item.classList.toggle('is-active', active);
+          item.setAttribute('aria-selected', String(active));
+        });
+        window.dispatchEvent(new Event('resize'));
+      }));
+      const hazardMapLink = document.querySelector('.side-nav-hazard > .side-nav-item');
+      hazardMapLink?.addEventListener('click', (event) => {
+        event.preventDefault();
+        const hazardGroup = hazardMapLink.closest('.side-nav-hazard');
+        const expanded = hazardGroup?.classList.toggle('is-expanded') ?? false;
+        hazardMapLink.setAttribute('aria-expanded', String(expanded));
+      });
+
+    })();
+
+  </script>
+
+</body>
+</html>
