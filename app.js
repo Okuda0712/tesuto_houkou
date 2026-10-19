@@ -511,7 +511,9 @@
     congestionLayers: [],
     reportPickMode: false,
     reportTrack: [],
-    reportTrackActive: false
+    reportTrackActive: false,
+    reportTrackLine: null,
+    reportTrackRangeLine: null
   };
 
   const el = (id) => document.getElementById(id);
@@ -523,6 +525,9 @@
     }
 
     state.map = L.map('map', { zoomControl: true, preferCanvas: true, closePopupOnClick: true });
+    state.map.on('zoomend', renderReportTrackLayers);
+    restoreReportTrack();
+    renderReportTrackLayers();
     state.map.zoomControl.setPosition('bottomleft');
     state.map.createPane('hazardPane');
     state.map.getPane('hazardPane').style.zIndex = '250';
@@ -657,6 +662,8 @@
     });
   }
 
+  const REPORT_TRACK_SESSION_KEY = 'kamakura-report-gps-track-v1';
+  const REPORT_TRACK_MAX_POINTS = 3000;
   const REPORT_TRACK_MAX_ACCURACY = 50;
   const REPORT_TRACK_BUFFER_METERS = 50;
   const REPORT_TRACK_MIN_POINTS = 3;
@@ -677,6 +684,88 @@
     const t = lengthSquared === 0 ? 0 : Math.max(0, Math.min(1, -(a.x * dx + a.y * dy) / lengthSquared));
     return Math.hypot(a.x + t * dx, a.y + t * dy);
   }
+  function saveReportTrack() {
+    try { sessionStorage.setItem(REPORT_TRACK_SESSION_KEY, JSON.stringify(state.reportTrack)); } catch (_) {}
+  }
+
+  function restoreReportTrack() {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(REPORT_TRACK_SESSION_KEY) || '[]');
+      if (Array.isArray(saved)) {
+        state.reportTrack = saved.filter((point) => Number.isFinite(point?.lat) && Number.isFinite(point?.lng) && Number.isFinite(point?.time));
+      }
+    } catch (_) {
+      state.reportTrack = [];
+    }
+    if (state.reportTrack.length) {
+      updateReportTrackStatus('保存されたGPS軌跡を表示中です。青線が移動軌跡、薄青の帯がその左右50mの投稿可能範囲です。');
+    }
+  }
+
+  function reportTrackRangeWeight() {
+    const centerLatitude = state.reportTrack.reduce((sum, point) => sum + point.lat, 0) / state.reportTrack.length;
+    const metersPerPixel = 156543.03392 * Math.cos(centerLatitude * Math.PI / 180) / (2 ** state.map.getZoom());
+    return Math.max(2, (REPORT_TRACK_BUFFER_METERS * 2) / metersPerPixel);
+  }
+  function renderReportTrackLayers() {
+    if (!state.map) return;
+    [state.reportTrackLine, state.reportTrackRangeLine].forEach((layer) => {
+      if (layer && state.map.hasLayer(layer)) state.map.removeLayer(layer);
+    });
+    state.reportTrackLine = null;
+    state.reportTrackRangeLine = null;
+    if (!state.reportTrack.length) return;
+
+    const points = state.reportTrack.map((point) => [point.lat, point.lng]);
+    if (points.length === 1) {
+      state.reportTrackRangeLine = L.circle(points[0], {
+        radius: REPORT_TRACK_BUFFER_METERS,
+        color: '#0878b5', weight: 1, opacity: 0.55,
+        fillColor: '#1685bd', fillOpacity: 0.14, interactive: false
+      }).addTo(state.map);
+      return;
+    }
+
+    state.reportTrackRangeLine = L.polyline(points, {
+      color: '#1685bd',
+      weight: reportTrackRangeWeight(),
+      opacity: 0.2,
+      lineCap: 'round', lineJoin: 'round', interactive: false
+    }).addTo(state.map);
+    state.reportTrackLine = L.polyline(points, {
+      color: '#075b96', weight: 4, opacity: 0.95,
+      lineCap: 'round', lineJoin: 'round', interactive: false
+    }).addTo(state.map);
+    state.reportTrackLine.bringToFront();
+  }
+  function appendReportTrackPointToLayers(point) {
+    if (!state.map) return;
+    const latlng = [point.lat, point.lng];
+    if (state.reportTrack.length === 1) {
+      state.reportTrackRangeLine = L.circle(latlng, {
+        radius: REPORT_TRACK_BUFFER_METERS,
+        color: '#0878b5', weight: 1, opacity: 0.55,
+        fillColor: '#1685bd', fillOpacity: 0.14, interactive: false
+      }).addTo(state.map);
+      return;
+    }
+    if (!state.reportTrackLine) {
+      if (state.reportTrackRangeLine && state.map.hasLayer(state.reportTrackRangeLine)) state.map.removeLayer(state.reportTrackRangeLine);
+      const initialPoints = state.reportTrack.slice(-2).map((item) => [item.lat, item.lng]);
+      state.reportTrackRangeLine = L.polyline(initialPoints, {
+        color: '#1685bd', weight: reportTrackRangeWeight(), opacity: 0.2,
+        lineCap: 'round', lineJoin: 'round', interactive: false
+      }).addTo(state.map);
+      state.reportTrackLine = L.polyline(initialPoints, {
+        color: '#075b96', weight: 4, opacity: 0.95,
+        lineCap: 'round', lineJoin: 'round', interactive: false
+      }).addTo(state.map);
+      state.reportTrackLine.bringToFront();
+      return;
+    }
+    state.reportTrackRangeLine.addLatLng(latlng);
+    state.reportTrackLine.addLatLng(latlng);
+  }
   function updateReportTrackStatus(message) {
     const status = el('reportTrackStatus');
     if (status) status.textContent = message;
@@ -692,6 +781,13 @@
       if (distance < 5 || distance / elapsedSeconds > 12) return false;
     }
     state.reportTrack.push(point);
+    if (state.reportTrack.length > REPORT_TRACK_MAX_POINTS) {
+      state.reportTrack.shift();
+      renderReportTrackLayers();
+    } else {
+      appendReportTrackPointToLayers(point);
+    }
+    saveReportTrack();
     return true;
   }
 
@@ -699,6 +795,8 @@
     if (state.watchId !== null) navigator.geolocation.clearWatch(state.watchId);
     state.watchId = null;
     state.reportTrack = [];
+    try { sessionStorage.removeItem(REPORT_TRACK_SESSION_KEY); } catch (_) {}
+    renderReportTrackLayers();
     state.reportTrackActive = true;
     recordReportTrackPosition(initialPosition);
     state.watchId = navigator.geolocation.watchPosition((position) => {
