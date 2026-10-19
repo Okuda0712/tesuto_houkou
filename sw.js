@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kamakura-disaster-cache-v40';
+const CACHE_NAME = 'kamakura-disaster-cache-v41';
 const TILE_CACHE_NAME = 'kamakura-disaster-tile-cache-v14';
 const ASSETS_TO_CACHE = [
   './',

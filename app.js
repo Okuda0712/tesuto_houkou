@@ -614,7 +614,13 @@
     if (!state.userMarker) state.userMarker = L.marker(latlng, { icon: userIcon(), zIndexOffset: 1000 }).addTo(state.map).bindPopup('現在地');
     else state.userMarker.setLatLng(latlng);
 
-    if (!state.accuracyCircle) {
+    // Hide variable GPS uncertainty while showing the fixed reportable buffer.
+    if (state.reportTrack.length) {
+      if (state.accuracyCircle) {
+        if (state.map.hasLayer(state.accuracyCircle)) state.map.removeLayer(state.accuracyCircle);
+        state.accuracyCircle = null;
+      }
+    } else if (!state.accuracyCircle) {
       state.accuracyCircle = L.circle(latlng, { radius: Math.max(accuracy || 10, 10), color: '#075b96', weight: 1, fillColor: '#1685bd', fillOpacity: 0.12 }).addTo(state.map);
     } else {
       state.accuracyCircle.setLatLng(latlng).setRadius(Math.max(accuracy || 10, 10));
