@@ -1809,3 +1809,13 @@ a{color:inherit}
   .side-panel,.right-panel{width:calc(100vw - 16px) !important;max-height:58dvh !important}
   .right-panel{max-height:36dvh !important}
 }
+
+/* Mobile tab content: keep location and tracking actions available in both panel tabs. */
+@media (max-width:700px){
+  .side-panel[data-side-tab="info"] .action-panel,
+  .side-panel[data-side-tab="route"] .action-panel{display:grid !important;gap:8px !important}
+  .side-panel[data-side-tab="info"] .action-panel>button,
+  .side-panel[data-side-tab="route"] .action-panel>button{display:block !important;width:100%}
+  .side-panel[data-side-tab="info"] .action-panel>.demo-controls{display:none !important}
+  .side-panel[data-side-tab="route"] .action-panel>.demo-controls{display:block !important}
+}

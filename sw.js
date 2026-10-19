@@ -1,10 +1,10 @@
-const CACHE_NAME = 'kamakura-disaster-cache-v39';
+const CACHE_NAME = 'kamakura-disaster-cache-v40';
 const TILE_CACHE_NAME = 'kamakura-disaster-tile-cache-v14';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './app.js',
-  './style.css?v=36',
+  './style.css?v=37',
   './leaflet.js',
   './leaflet.css',
   './manifest.json',
