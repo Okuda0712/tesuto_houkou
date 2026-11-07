@@ -1,17 +1,43 @@
 {
-  "name": "鎌倉市 観光客向け災害避難支援システム",
-  "short_name": "鎌倉防災ナビ",
-  "description": "OpenStreetMap、ブラウザGPS、公式ハザードタイル、歩行者経路探索を使用した授業発表用の災害避難支援プロトタイプ",
-  "start_url": "./index.html",
+  "id": "./",
+  "name": "鎌倉市向け災害避難支援システム",
+  "short_name": "鎌倉避難",
+  "description": "鎌倉市全域オフラインパック、GPS、危険区域、避難先、端末内A*徒歩経路探索に対応した災害避難支援PWA",
+  "start_url": "./?source=pwa",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#f5f6f2",
-  "theme_color": "#187a53",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#eef0f1",
+  "theme_color": "#203c50",
+  "orientation": "any",
+  "lang": "ja",
+  "dir": "ltr",
+  "categories": [
+    "navigation",
+    "utilities"
+  ],
   "icons": [
     {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }

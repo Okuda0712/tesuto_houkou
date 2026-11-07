@@ -4,11 +4,19 @@ const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './app.js',
-  './style.css?v=37',
+  './offline-data.js',
+  './offline-pack.js',
+  './jma-ui.js',
+  './style.css',
   './leaflet.js',
   './leaflet.css',
   './manifest.json',
   './icon.svg',
+  './favicon-64.png',
+  './apple-touch-icon.png',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-512.png',
   './images/layers.png',
   './images/layers-2x.png',
   './images/marker-icon.png',
@@ -94,3 +102,29 @@ self.addEventListener('fetch', (event) => {
     );
   }
 });
+// Push notifications for official disaster updates.
+self.addEventListener('push', (event) => {
+  event.waitUntil((async () => {
+    let data = {};
+    try {
+      data = event.data ? event.data.json() : {};
+    } catch (_) {
+      data = { title: '鎌倉防災ナビ', body: '新しい防災情報があります。' };
+    }
+    await self.registration.showNotification(data.title || '鎌倉防災ナビ', {
+      body: data.body || '公式情報を確認してください。',
+      icon: './icon-192.png',
+      badge: './favicon-64.png',
+      tag: data.tag || 'kamakura-jma',
+      data: { url: data.url || './' }
+    });
+  })());
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(clients.openWindow(event.notification.data?.url || './'));
+});
+
+
+

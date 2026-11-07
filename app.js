@@ -9,6 +9,8 @@
 
   const LAST_POSITION_KEY = 'kamakura-evac:last-position:v1';
   const ROUTE_CACHE_KEY = 'kamakura-evac:route-cache:v13-safe-shortest';
+  const OFFLINE_PREPARED_ROUTES_KEY = 'kamakura-evac:offline-prepared-routes:v31';
+  const OFFLINE_DATA = window.KAMAKURA_OFFLINE || null;
   const HAZARD_SELECTION_KEY = 'kamakura-evac:hazards:v1';
   const MAX_SAVED_POSITION_AGE = 6 * 60 * 60 * 1000;
   const SHELTER_STATUS_KEY = 'kamakura-evac:shelter-status:v14';
@@ -338,7 +340,7 @@
       demoLocationTitle: 'デモ位置を使う', useStationDemo: '鎌倉駅を現在地にする', useCoastDemo: '由比ヶ浜付近を現在地にする',
       mapNote: 'オンライン中に表示した地図・ハザードと計算済みルートは、オフラインでも再表示できます。新しい地域や新しい経路の取得には通信が必要です。', candidateEyebrow: 'EVACUATION DESTINATIONS', candidateTitle: '避難先候補',
       candidateDisclaimer: '候補地は鎌倉市の公開情報をもとにした授業用デモです。実際の避難では自治体の指示と現地状況を優先してください。', guidanceTitle: '災害発生時の初期行動', offlineTitle: 'オフライン利用', offlineWorksTitle: '通信なしでも使えるもの', offlineWorksText: '保存済みの現在地、オンライン中に表示した地図・ハザード、計算済みの徒歩ルート、初期行動案内を再表示できます。', offlineNeedsTitle: '通信が必要なもの', offlineNeedsText: '未表示地域の地図、新しいハザードタイル、新しい現在地からの経路計算、最新の災害情報の取得には通信が必要です。',
-      navTransport: '交通情報', navReport: '通行不可報告', navNotifications: '通知', navAdmin: '管理者デモ', navSystem: 'システム構成', startScenario: '由比ヶ浜 津波デモ開始', transportTitle: '交通機関の運行情報', transportLead: 'JR・江ノ電などの運行状況を表示し、運休時には駅への集中を避ける判断材料にします。', demoData: 'デモデータ', prototypeLabel: '試作機能', toggleTransportDemo: '運休デモを切替', backMap: '地図へ戻る', reportTitle: '通れない道などの報告', reportLead: '現在地または地図上で地点を指定し、通行不可・倒木・浸水などを報告します。報告地点はルート評価に反映します。', reportTypeLabel: '種類', reportNoteLabel: '補足', useCurrentReport: '現在地を使う', pickReportMap: '地図で地点指定', submitReport: '報告を登録', notificationTitle: '通知・警告', offlineLabTitle: 'オフライン動作', offlineShellText: 'HTML・CSS・JavaScriptなどのアプリ本体をキャッシュします。', offlineDataText: '避難先状態・報告情報・計算済みルートなどを端末側へ保持します。', offlineFutureText: '端末内の新規経路計算は設計・技術検証対象です。現行デモでは保存済みルートを利用します。', adminTitle: '総合防災課 管理者デモ', adminLead: '避難所の管理は開設ON/OFFに絞り、道路混雑や利用者報告と組み合わせて避難先候補へ反映する試作です。', toggleCongestionDemo: '道路混雑デモを切替', resetDemo: 'デモ状態を初期化', systemTitle: 'システム構成',      focus: '地図で確認', route: '徒歩ルートを表示', notSet: '未取得', notSelected: '未選択'
+      navTransport: '交通情報', navReport: '通行不可報告', navNotifications: '通知', navAdmin: '管理者デモ', navSystem: 'システム構成', startScenario: '由比ヶ浜 津波デモ開始', transportTitle: '交通機関の運行情報', transportLead: 'JR・江ノ電などの運行状況を表示し、運休時には駅への集中を避ける判断材料にします。', demoData: 'デモデータ', prototypeLabel: '試作機能', toggleTransportDemo: '運休デモを切替', backMap: '地図へ戻る', reportTitle: '通れない道などの報告', reportLead: '現在地または地図上で地点を指定し、通行不可・倒木・浸水などを報告します。報告地点はルート評価に反映します。', reportTypeLabel: '種類', reportNoteLabel: '補足', useCurrentReport: '現在地を使う', pickReportMap: '地図で地点指定', submitReport: '報告を登録', notificationTitle: '通知・警告', offlineLabTitle: 'オフライン動作', offlineShellText: 'HTML・CSS・JavaScriptなどのアプリ本体をキャッシュします。', offlineDataText: '避難先状態・報告情報・計算済みルートなどを端末側へ保持します。', offlineFutureText: '鎌倉駅・由比ヶ浜・長谷・材木座周辺では保存済み道路データから端末内で徒歩経路を計算できます。対象範囲外では通信が必要です。', adminTitle: '総合防災課 管理者デモ', adminLead: '避難所の管理は開設ON/OFFに絞り、道路混雑や利用者報告と組み合わせて避難先候補へ反映する試作です。', toggleCongestionDemo: '道路混雑デモを切替', resetDemo: 'デモ状態を初期化', systemTitle: 'システム構成',      focus: '地図で確認', route: '徒歩ルートを表示', notSet: '未取得', notSelected: '未選択'
     },
     en: {
       brandKicker: 'Disaster information for visitors', siteTitle: 'Kamakura Evacuation Support Portal', menuTitle: 'Menu', backTop: 'Top', navEmergency: 'Emergency', navMap: 'Location & route', navCandidate: 'Evacuation options', navScenario: 'Guidance', navOffline: 'Offline use', navFuture: 'Future functions', forceGps: 'Refresh GPS',
@@ -349,7 +351,7 @@
       demoLocationTitle: 'Use demo location', useStationDemo: 'Use Kamakura Station', useCoastDemo: 'Use Yuigahama coast',
       mapNote: 'Map and hazard tiles viewed online and calculated routes can be reopened offline. New map areas and new route calculations require a connection.', candidateEyebrow: 'EVACUATION DESTINATIONS', candidateTitle: 'Evacuation options',
       candidateDisclaimer: 'Destinations are based on Kamakura City public information for a classroom demo. Follow official instructions in a real emergency.', guidanceTitle: 'First action during a disaster', offlineTitle: 'Offline use', offlineWorksTitle: 'Available without a connection', offlineWorksText: 'You can reopen your saved location, map and hazard tiles viewed online, calculated walking routes and first-action guidance.', offlineNeedsTitle: 'Requires a connection', offlineNeedsText: 'New map areas, new hazard tiles, new route calculations and current emergency information require a connection.',
-      navTransport: 'Transport', navReport: 'Road report', navNotifications: 'Notifications', navAdmin: 'Admin demo', navSystem: 'System', startScenario: 'Start Yuigahama tsunami demo', transportTitle: 'Public transport status', transportLead: 'Displays railway and bus status and helps avoid unnecessary concentration around stations.', demoData: 'Demo data', prototypeLabel: 'Prototype', toggleTransportDemo: 'Toggle disruption demo', backMap: 'Back to map', reportTitle: 'Report an impassable road', reportLead: 'Choose your current location or a point on the map and report a blocked road, flooding, debris or severe congestion.', reportTypeLabel: 'Type', reportNoteLabel: 'Note', useCurrentReport: 'Use current location', pickReportMap: 'Pick on map', submitReport: 'Submit report', notificationTitle: 'Notifications and warnings', offlineLabTitle: 'Offline operation', offlineShellText: 'Caches the application shell such as HTML, CSS and JavaScript.', offlineDataText: 'Keeps shelter states, reports and calculated routes on the device.', offlineFutureText: 'New route calculation on the device is a design and verification target. The current demo uses saved routes.', adminTitle: 'Disaster management admin demo', adminLead: 'Shelter management is reduced to open/closed status and is combined with road congestion and user reports.', toggleCongestionDemo: 'Toggle congestion demo', resetDemo: 'Reset demo', systemTitle: 'System architecture',      focus: 'View on map', route: 'Show walking route', notSet: 'Not acquired', notSelected: 'Not selected'
+      navTransport: 'Transport', navReport: 'Road report', navNotifications: 'Notifications', navAdmin: 'Admin demo', navSystem: 'System', startScenario: 'Start Yuigahama tsunami demo', transportTitle: 'Public transport status', transportLead: 'Displays railway and bus status and helps avoid unnecessary concentration around stations.', demoData: 'Demo data', prototypeLabel: 'Prototype', toggleTransportDemo: 'Toggle disruption demo', backMap: 'Back to map', reportTitle: 'Report an impassable road', reportLead: 'Choose your current location or a point on the map and report a blocked road, flooding, debris or severe congestion.', reportTypeLabel: 'Type', reportNoteLabel: 'Note', useCurrentReport: 'Use current location', pickReportMap: 'Pick on map', submitReport: 'Submit report', notificationTitle: 'Notifications and warnings', offlineLabTitle: 'Offline operation', offlineShellText: 'Caches the application shell such as HTML, CSS and JavaScript.', offlineDataText: 'Keeps shelter states, reports and calculated routes on the device.', offlineFutureText: 'Within the Kamakura Station, Yuigahama, Hase and Zaimokuza coverage, walking routes can be calculated on device from saved roads. Routes outside this area require a connection.', adminTitle: 'Disaster management admin demo', adminLead: 'Shelter management is reduced to open/closed status and is combined with road congestion and user reports.', toggleCongestionDemo: 'Toggle congestion demo', resetDemo: 'Reset demo', systemTitle: 'System architecture',      focus: 'View on map', route: 'Show walking route', notSet: 'Not acquired', notSelected: 'Not selected'
     },
     zh: {
       brandKicker: '面向游客的防灾信息', siteTitle: '镰仓市灾害避难支援门户', menuTitle: '菜单', backTop: '返回顶部', navEmergency: '紧急信息', navMap: '当前位置与路线', navCandidate: '避难候选地点', navScenario: '灾害指南', navOffline: '离线使用', navFuture: '扩展功能', forceGps: '重新获取GPS',
@@ -360,7 +362,7 @@
       demoLocationTitle: '使用演示位置', useStationDemo: '使用镰仓站位置', useCoastDemo: '使用由比滨海岸位置',
       mapNote: '在线浏览过的地图和灾害图层及已计算路线可在离线时重新显示。新的区域和新的路线计算需要网络。', candidateEyebrow: 'EVACUATION DESTINATIONS', candidateTitle: '避难候选地点',
       candidateDisclaimer: '候选地点基于镰仓市公开信息，仅用于课堂演示。实际灾害时请遵循官方指示。', guidanceTitle: '灾害发生时的初步行动', offlineTitle: '离线使用', offlineWorksTitle: '无网络也可使用', offlineWorksText: '可重新显示保存的位置、在线浏览过的地图和灾害图层、已计算的步行路线及初步行动指南。', offlineNeedsTitle: '需要网络', offlineNeedsText: '新的地图区域、灾害图层、路线计算和最新灾害信息需要网络连接。',
-      navTransport: '交通信息', navReport: '道路报告', navNotifications: '通知', navAdmin: '管理演示', navSystem: '系统构成', startScenario: '启动由比滨海啸演示', transportTitle: '交通运行信息', transportLead: '显示铁路和公交运行状态，并在停运时帮助避免人员集中到车站。', demoData: '演示数据', prototypeLabel: '试作功能', toggleTransportDemo: '切换停运演示', backMap: '返回地图', reportTitle: '道路无法通行报告', reportLead: '使用当前位置或地图选点，报告道路封闭、积水、障碍物或严重拥堵。', reportTypeLabel: '类型', reportNoteLabel: '补充', useCurrentReport: '使用当前位置', pickReportMap: '在地图上选点', submitReport: '提交报告', notificationTitle: '通知与警告', offlineLabTitle: '离线运行', offlineShellText: '缓存HTML、CSS、JavaScript等应用主体。', offlineDataText: '在设备上保存避难点状态、报告信息和已计算路线。', offlineFutureText: '设备内的新路线计算仍是设计和技术验证目标，目前演示使用已保存路线。', adminTitle: '综合防灾部门管理演示', adminLead: '避难所管理简化为开放/关闭，并结合道路拥堵和用户报告影响候选地点。', toggleCongestionDemo: '切换道路拥堵演示', resetDemo: '重置演示状态', systemTitle: '系统构成',      focus: '在地图上查看', route: '显示步行路线', notSet: '未获取', notSelected: '未选择'
+      navTransport: '交通信息', navReport: '道路报告', navNotifications: '通知', navAdmin: '管理演示', navSystem: '系统构成', startScenario: '启动由比滨海啸演示', transportTitle: '交通运行信息', transportLead: '显示铁路和公交运行状态，并在停运时帮助避免人员集中到车站。', demoData: '演示数据', prototypeLabel: '试作功能', toggleTransportDemo: '切换停运演示', backMap: '返回地图', reportTitle: '道路无法通行报告', reportLead: '使用当前位置或地图选点，报告道路封闭、积水、障碍物或严重拥堵。', reportTypeLabel: '类型', reportNoteLabel: '补充', useCurrentReport: '使用当前位置', pickReportMap: '在地图上选点', submitReport: '提交报告', notificationTitle: '通知与警告', offlineLabTitle: '离线运行', offlineShellText: '缓存HTML、CSS、JavaScript等应用主体。', offlineDataText: '在设备上保存避难点状态、报告信息和已计算路线。', offlineFutureText: '在镰仓站、由比滨、长谷和材木座覆盖范围内，可使用已保存道路数据在设备上计算步行路线。范围外需要网络连接。', adminTitle: '综合防灾部门管理演示', adminLead: '避难所管理简化为开放/关闭，并结合道路拥堵和用户报告影响候选地点。', toggleCongestionDemo: '切换道路拥堵演示', resetDemo: '重置演示状态', systemTitle: '系统构成',      focus: '在地图上查看', route: '显示步行路线', notSet: '未获取', notSelected: '未选择'
     }
   };
 
@@ -513,7 +515,11 @@
     reportTrack: [],
     reportTrackActive: false,
     reportTrackLine: null,
-    reportTrackRangeLine: null
+    reportTrackRangeLine: null,
+    offlineGraphCache: null,
+    offlinePack: null,
+    offlinePreparedRoutes: loadJson(OFFLINE_PREPARED_ROUTES_KEY, []),
+    packInstalling: false
   };
 
   const el = (id) => document.getElementById(id);
@@ -1192,6 +1198,289 @@
     el('routeSummary').textContent = candidate.name[state.lang];
   }
 
+  function getOfflineData() {
+    return OFFLINE_DATA;
+  }
+
+  function pointInPolygon(point, polygon) {
+    let inside = false;
+    const x = point.lng;
+    const y = point.lat;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const xi = polygon[i][1], yi = polygon[i][0];
+      const xj = polygon[j][1], yj = polygon[j][0];
+      const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / ((yj - yi) || 1e-12) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  function offlineHazardPenalty(point) {
+    const data = getOfflineData();
+    if (!data) return 0;
+    let penalty = 0;
+    selectedHazards().forEach((type) => {
+      const zones = data.hazards?.[type] || [];
+      zones.forEach((zone) => {
+        if (!pointInPolygon(point, zone.coords)) return;
+        if (type === 'tsunami' || type === 'hightide') penalty += 18;
+        else if (type === 'flood' || type === 'inland') penalty += 9;
+        else if (type === 'landslide') penalty += 11;
+      });
+    });
+    return penalty;
+  }
+
+  function densifyLine(coords, spacing = 38) {
+    const output = [];
+    coords.forEach((coord, index) => {
+      if (index === 0) {
+        output.push(coord);
+        return;
+      }
+      const prev = coords[index - 1];
+      const distance = haversine({ lat: prev[0], lng: prev[1] }, { lat: coord[0], lng: coord[1] });
+      const count = Math.max(1, Math.ceil(distance / spacing));
+      for (let step = 1; step <= count; step += 1) {
+        const ratio = step / count;
+        output.push([
+          prev[0] + (coord[0] - prev[0]) * ratio,
+          prev[1] + (coord[1] - prev[1]) * ratio
+        ]);
+      }
+    });
+    return output;
+  }
+
+  function nodeKey(lat, lng) {
+    return `${lat.toFixed(5)},${lng.toFixed(5)}`;
+  }
+
+  function buildOfflineGraph() {
+    if (state.offlineGraphCache) return state.offlineGraphCache;
+
+    const nodes = new Map();
+    const edges = new Map();
+    const data = getOfflineData();
+
+    if (state.offlinePack?.graph?.nodes?.length) {
+      state.offlinePack.graph.nodes.forEach((entry) => {
+        const key = String(entry[0]);
+        nodes.set(key, { key, lat: entry[1], lng: entry[2] });
+        edges.set(key, []);
+      });
+      state.offlinePack.graph.edges.forEach((entry) => {
+        const from = String(entry[0]);
+        const to = String(entry[1]);
+        if (!nodes.has(from) || !nodes.has(to)) return;
+        const edge = { to, distance: entry[2], roadClass: entry[3], name: entry[4] || '', highway: entry[5] || '' };
+        const reverse = { to: from, distance: entry[2], roadClass: entry[3], name: entry[4] || '', highway: entry[5] || '' };
+        edges.get(from).push(edge);
+        edges.get(to).push(reverse);
+      });
+      state.offlineGraphCache = { nodes, edges };
+      return state.offlineGraphCache;
+    }
+
+    const addNode = (coord) => {
+      const key = nodeKey(coord[0], coord[1]);
+      if (!nodes.has(key)) nodes.set(key, { key, lat: coord[0], lng: coord[1] });
+      if (!edges.has(key)) edges.set(key, []);
+      return key;
+    };
+    const addEdge = (aCoord, bCoord, roadClass, name) => {
+      const a = addNode(aCoord);
+      const b = addNode(bCoord);
+      const distance = haversine({ lat: aCoord[0], lng: aCoord[1] }, { lat: bCoord[0], lng: bCoord[1] });
+      edges.get(a).push({ to: b, distance, roadClass, name });
+      edges.get(b).push({ to: a, distance, roadClass, name });
+    };
+
+    if (data?.roads) {
+      data.roads.forEach((road) => {
+        const points = densifyLine(road.coords);
+        for (let i = 1; i < points.length; i += 1) addEdge(points[i - 1], points[i], road.roadClass, road.name);
+      });
+    }
+
+    state.offlinePreparedRoutes.forEach((route) => {
+      if (!Array.isArray(route.coordinates) || route.coordinates.length < 2) return;
+      const points = densifyLine(route.coordinates, 32);
+      for (let i = 1; i < points.length; i += 1) addEdge(points[i - 1], points[i], 'prepared', route.name || '事前保存道路');
+    });
+
+    state.offlineGraphCache = { nodes, edges };
+    return state.offlineGraphCache;
+  }
+
+
+  class MinHeap {
+    constructor() {
+      this.items = [];
+    }
+
+    push(key, score) {
+      const item = { key, score };
+      this.items.push(item);
+      let index = this.items.length - 1;
+      while (index > 0) {
+        const parent = Math.floor((index - 1) / 2);
+        if (this.items[parent].score <= score) break;
+        this.items[index] = this.items[parent];
+        index = parent;
+      }
+      this.items[index] = item;
+    }
+
+    pop() {
+      if (!this.items.length) return null;
+      const root = this.items[0];
+      const last = this.items.pop();
+      if (this.items.length && last) {
+        let index = 0;
+        while (true) {
+          let child = index * 2 + 1;
+          if (child >= this.items.length) break;
+          if (child + 1 < this.items.length && this.items[child + 1].score < this.items[child].score) child += 1;
+          if (this.items[child].score >= last.score) break;
+          this.items[index] = this.items[child];
+          index = child;
+        }
+        this.items[index] = last;
+      }
+      return root;
+    }
+
+    get size() {
+      return this.items.length;
+    }
+  }
+
+  function nearestGraphNode(graph, point) {
+    let best = null;
+    graph.nodes.forEach((node) => {
+      const distance = haversine(point, node);
+      if (!best || distance < best.distance) best = { key: node.key, node, distance };
+    });
+    return best;
+  }
+
+  function edgeOfflineCost(fromNode, toNode, edge) {
+    const midpoint = { lat: (fromNode.lat + toNode.lat) / 2, lng: (fromNode.lng + toNode.lng) / 2 };
+    let multiplier = edge.roadClass === 'primary' ? 0.86 : edge.roadClass === 'secondary' ? 0.94 : edge.roadClass === 'prepared' ? 0.90 : 1.08;
+    multiplier += offlineHazardPenalty(midpoint);
+
+    if (selectedHazards().includes('flood') || selectedHazards().includes('inland')) {
+      RIVER_AVOID_SEGMENTS.forEach((river) => {
+        const distance = distanceToSegmentMeters(midpoint, river.start, river.end);
+        if (distance < 80) multiplier += 12;
+        else if (distance < 160) multiplier += 5;
+        else if (distance < 260) multiplier += 2;
+      });
+    }
+
+    state.reports.forEach((report) => {
+      const distance = distanceToSegmentMeters({ lat: report.lat, lng: report.lng }, fromNode, toNode);
+      if (distance < 65 && ['blocked', 'flooded', 'debris'].includes(report.type)) multiplier += 30;
+      else if (distance < 120) multiplier += 6;
+    });
+
+    if (state.congestionDemo) {
+      CONGESTION_ZONES.forEach((zone) => {
+        const distance = haversine(midpoint, { lat: zone.center[0], lng: zone.center[1] });
+        if (distance < zone.radius) multiplier += zone.level * 2.2;
+      });
+    }
+
+    if (state.transportDisruption) {
+      const station = { lat: 35.3193, lng: 139.5504 };
+      if (haversine(midpoint, station) < 260) multiplier += 3;
+    }
+
+    return edge.distance * multiplier;
+  }
+
+  function getOfflinePedestrianRoute(from, to, candidateId) {
+    const data = getOfflineData();
+    if (!data) throw new Error('オフライン道路データがありません。');
+    if (!offlineAreaContains(from) || !offlineAreaContains(to)) throw new Error('鎌倉市オフライン範囲外です。');
+
+    const graph = buildOfflineGraph();
+    const start = nearestGraphNode(graph, from);
+    const goal = nearestGraphNode(graph, to);
+    const connectionLimit = state.offlinePack ? 450 : 700;
+    if (!start || !goal || start.distance > connectionLimit || goal.distance > connectionLimit) {
+      throw new Error('現在地または避難先を道路ネットワークへ接続できません。');
+    }
+
+    const queue = new MinHeap();
+    const cameFrom = new Map();
+    const g = new Map([[start.key, 0]]);
+    const closed = new Set();
+    queue.push(start.key, haversine(start.node, goal.node));
+
+    let reached = false;
+    while (queue.size) {
+      const item = queue.pop();
+      if (!item || closed.has(item.key)) continue;
+      const current = item.key;
+      if (current === goal.key) {
+        reached = true;
+        break;
+      }
+      closed.add(current);
+
+      const currentNode = graph.nodes.get(current);
+      const neighbors = graph.edges.get(current) || [];
+      for (const edge of neighbors) {
+        if (closed.has(edge.to)) continue;
+        const nextNode = graph.nodes.get(edge.to);
+        if (!nextNode) continue;
+        const tentative = (g.get(current) ?? Infinity) + edgeOfflineCost(currentNode, nextNode, edge);
+        if (tentative >= (g.get(edge.to) ?? Infinity)) continue;
+        cameFrom.set(edge.to, current);
+        g.set(edge.to, tentative);
+        queue.push(edge.to, tentative + haversine(nextNode, goal.node));
+      }
+    }
+
+    if (!reached) throw new Error('端末内道路ネットワークで避難経路を見つけられませんでした。');
+
+    const keys = [goal.key];
+    let current = goal.key;
+    while (cameFrom.has(current)) {
+      current = cameFrom.get(current);
+      keys.push(current);
+    }
+    keys.reverse();
+
+    const coordinates = [[from.lat, from.lng], ...keys.map((key) => {
+      const node = graph.nodes.get(key);
+      return [node.lat, node.lng];
+    }), [to.lat, to.lng]];
+
+    let distance = 0;
+    for (let i = 1; i < coordinates.length; i += 1) {
+      distance += haversine(
+        { lat: coordinates[i - 1][0], lng: coordinates[i - 1][1] },
+        { lat: coordinates[i][0], lng: coordinates[i][1] }
+      );
+    }
+
+    return {
+      coordinates,
+      distance,
+      duration: distance / 1.12,
+      risk: routeRiskScore(coordinates),
+      planName: state.offlinePack ? '鎌倉市全域・端末内A*経路' : '端末内A*オフライン経路',
+      candidateId,
+      from: { lat: from.lat, lng: from.lng },
+      to: { lat: to.lat, lng: to.lng },
+      savedAt: Date.now(),
+      offlineCalculated: true
+    };
+  }
+
   async function showRoute(candidate) {
     if (!state.userPosition) {
       useOfflineSavedPosition('保存済み現在地');
@@ -1213,7 +1502,12 @@
     try {
       let result;
       if (!navigator.onLine) {
-        result = findNearbySavedRoute(candidate.id, state.userPosition);
+        try {
+          result = getOfflinePedestrianRoute(state.userPosition, destination, candidate.id);
+        } catch (offlineError) {
+          console.warn('端末内A*経路を計算できませんでした。保存済み経路を確認します。', offlineError);
+          result = findNearbySavedRoute(candidate.id, state.userPosition);
+        }
         if (!result) {
           showOfflineRouteUnavailable(candidate);
           return;
@@ -1228,8 +1522,12 @@
 
       const minutes = Math.max(1, Math.round(result.duration / 60));
       el('routeSummary').textContent = `${formatDistance(result.distance)} / 約${minutes}分`;
-      setRoutingState('success', `安全優先最短ルート：${formatDistance(result.distance)}・約${minutes}分`);
-      showToast(navigator.onLine ? '道路に沿った徒歩ルートを赤線で表示しました。' : '保存済みの徒歩ルートを赤線で表示しました。');
+      if (result.offlineCalculated) {
+        state.routeCache.set(routeCacheKey(state.userPosition, destination, candidate.id), result);
+        persistRouteCache();
+      }
+      setRoutingState('success', result.offlineCalculated ? `端末内A*避難ルート：${formatDistance(result.distance)}・約${minutes}分` : `安全優先最短ルート：${formatDistance(result.distance)}・約${minutes}分`);
+      showToast(result.offlineCalculated ? '保存済み道路データで端末内A*避難ルートを計算しました。' : navigator.onLine ? '道路に沿った徒歩ルートを赤線で表示しました。' : '保存済みの徒歩ルートを赤線で表示しました。');
     } catch (error) {
       console.error(error);
       clearRoute();
@@ -1869,11 +2167,176 @@
     list.innerHTML = items.map((item) => `<article class="notification-item ${item.level}"><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.text)}</p></article>`).join('');
   }
 
+  function formatBytes(bytes) {
+    if (!Number.isFinite(bytes)) return '不明';
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  }
+
+  function updatePackProgress(percent, message) {
+    const wrap = el('offlinePackProgressWrap');
+    const bar = el('offlinePackProgress');
+    const text = el('offlinePackProgressText');
+    const number = el('offlinePackProgressPercent');
+    if (wrap) wrap.hidden = false;
+    if (bar) bar.value = Math.max(0, Math.min(100, percent));
+    if (text) text.textContent = message;
+    if (number) number.textContent = `${Math.round(percent)}%`;
+  }
+
+  function renderOfflinePackStatus() {
+    const status = el('offlinePackStatus');
+    const saveButton = el('offlinePanelSaveButton');
+    const deleteButton = el('offlinePackDeleteButton');
+    if (!status) return;
+
+    if (state.packInstalling) {
+      status.textContent = '保存中';
+      if (saveButton) saveButton.disabled = true;
+      if (deleteButton) deleteButton.disabled = true;
+      return;
+    }
+
+    if (state.offlinePack) {
+      const installed = new Date(state.offlinePack.installedAt || Date.now()).toLocaleString('ja-JP');
+      status.textContent = `保存済み・${installed}`;
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.textContent = '全域データを更新';
+      }
+      if (deleteButton) deleteButton.disabled = false;
+    } else {
+      status.textContent = '未保存';
+      if (saveButton) {
+        saveButton.disabled = !navigator.onLine;
+        saveButton.textContent = '鎌倉市全域を保存';
+      }
+      if (deleteButton) deleteButton.disabled = true;
+    }
+  }
+
+  const STORAGE_BEFORE_KEY = 'kamakura-storage-before-install-v39';
+  const STORAGE_DELTA_KEY = 'kamakura-storage-last-delta-v39';
+  let storageRefreshSerial = 0;
+
+  async function refreshStorageUsage() {
+    const valueEl = el('storageUsageValue');
+    const detailsEl = el('storageUsageDetails');
+    const deltaEl = el('storageUsageDelta');
+    if (!valueEl) return;
+    const serial = ++storageRefreshSerial;
+    if (!navigator.storage || typeof navigator.storage.estimate !== 'function') {
+      valueEl.textContent = 'このブラウザでは計測できません';
+      detailsEl.textContent = 'Storage API が利用できません。HTTPS接続をお試しください。';
+      deltaEl.textContent = '保存前後の増加量：未計測';
+      return;
+    }
+    try {
+      const estimate = await navigator.storage.estimate();
+      if (serial !== storageRefreshSerial) return;
+      const used = Number(estimate.usage);
+      const quota = Number(estimate.quota);
+      valueEl.textContent = Number.isFinite(used) ? formatBytes(used) : '取得できません';
+      detailsEl.textContent = Number.isFinite(quota)
+        ? `サイト全体の推定使用量 / 保存可能な上限の目安 ${formatBytes(quota)}`
+        : 'サイト全体の推定使用量（保存可能容量は不明）';
+      const deltaRaw = sessionStorage.getItem(STORAGE_DELTA_KEY);
+      const delta = deltaRaw === null ? NaN : Number(deltaRaw);
+      deltaEl.textContent = Number.isFinite(delta)
+        ? `直近の全域保存による増加量（推定）：${delta >= 0 ? '+' : '−'}${formatBytes(Math.abs(delta))}`
+        : '保存前後の増加量：未計測（次回の全域保存時に記録）';
+    } catch (error) {
+      if (serial !== storageRefreshSerial) return;
+      valueEl.textContent = '計測できませんでした';
+      detailsEl.textContent = 'ブラウザの保存容量へのアクセスに失敗しました。';
+    }
+  }
+
+  async function installFullOfflinePack() {
+    if (!window.KAMAKURA_OFFLINE_PACK) {
+      showToast('全域オフラインパック機能を読み込めませんでした。');
+      return;
+    }
+    if (!navigator.onLine) {
+      showToast('初回保存はオンライン時に実行してください。');
+      return;
+    }
+    if (state.packInstalling) return;
+
+    state.packInstalling = true;
+    try {
+      const before = await navigator.storage?.estimate?.();
+      if (Number.isFinite(before?.usage)) sessionStorage.setItem(STORAGE_BEFORE_KEY, String(before.usage));
+      else sessionStorage.removeItem(STORAGE_BEFORE_KEY);
+      sessionStorage.removeItem(STORAGE_DELTA_KEY);
+    } catch (_) { sessionStorage.removeItem(STORAGE_BEFORE_KEY); }
+    renderOfflinePackStatus();
+    updatePackProgress(0, '準備しています');
+    setRoutingState('loading', '鎌倉市全域オフラインパックを保存中…');
+
+    try {
+      const result = await window.KAMAKURA_OFFLINE_PACK.install(updatePackProgress);
+      state.offlinePack = result.pack;
+      const beforeRaw = sessionStorage.getItem(STORAGE_BEFORE_KEY);
+      const before = beforeRaw === null ? NaN : Number(beforeRaw);
+      if (Number.isFinite(before) && Number.isFinite(result.estimate?.usage)) {
+        sessionStorage.setItem(STORAGE_DELTA_KEY, String(result.estimate.usage - before));
+      }
+      state.offlineGraphCache = null;
+      renderOfflinePackStatus();
+      renderOfflineMetrics();
+      await refreshStorageUsage();
+      setRoutingState('success', '鎌倉市全域オフラインパック保存完了');
+      const storageText = result.estimate?.usage ? ` 使用量 ${formatBytes(result.estimate.usage)}` : '';
+      showToast(`鎌倉市全域を保存しました。機内モードでも地図・避難先・危険区域・A*経路探索を利用できます。${storageText}`);
+    } catch (error) {
+      console.error(error);
+      setRoutingState('error', '全域オフラインパックの保存に失敗');
+      showToast(error?.message || '全域オフラインパックを保存できませんでした。');
+    } finally {
+      state.packInstalling = false;
+      renderOfflinePackStatus();
+    }
+  }
+
+  async function deleteFullOfflinePack() {
+    if (!window.KAMAKURA_OFFLINE_PACK || !state.offlinePack) return;
+    try {
+      await window.KAMAKURA_OFFLINE_PACK.clear();
+      state.offlinePack = null;
+      state.offlineGraphCache = null;
+      const wrap = el('offlinePackProgressWrap');
+      if (wrap) wrap.hidden = true;
+      renderOfflinePackStatus();
+      renderOfflineMetrics();
+      sessionStorage.removeItem(STORAGE_DELTA_KEY);
+      await refreshStorageUsage();
+      renderCandidates();
+      refreshSafePoints();
+      showToast('鎌倉市全域オフラインパックを削除しました。');
+    } catch (error) {
+      showToast('全域データを削除できませんでした。');
+    }
+  }
+
   function renderOfflineMetrics() {
     if (el('offlineNetworkBadge')) el('offlineNetworkBadge').textContent = navigator.onLine ? 'オンライン' : 'オフライン';
     if (!el('offlineMetrics')) return;
+
     const position = loadSavedPosition();
-    el('offlineMetrics').innerHTML = `<strong>端末内保存状況</strong><div>保存済み現在地: ${position ? 'あり' : 'なし'} / 保存済みルート: ${state.routeCache.size}件 / 通行不可報告: ${state.reports.length}件 / Service Worker: ${'serviceWorker' in navigator ? '対応' : '非対応'}</div>`;
+    const data = getOfflineData();
+    const graph = data ? buildOfflineGraph() : { nodes: new Map(), edges: new Map() };
+    const edgeCount = Array.from(graph.edges.values()).reduce((sum, list) => sum + list.length, 0);
+    const pack = state.offlinePack;
+    const installed = pack?.installedAt ? new Date(pack.installedAt).toLocaleString('ja-JP') : '未保存';
+    const hazardText = pack?.hasHazardTiles ? `${pack.hazardTileCount}タイル保存済み` : '簡易区域';
+    const shelterCount = pack?.shelters?.length || getFilteredCandidates().length;
+
+    el('offlineMetrics').innerHTML = `<strong>オフライン実装状況</strong>
+      <div>対象: ${escapeHtml(data?.name || '限定地区フォールバック')} / 全域パック: ${escapeHtml(installed)}</div>
+      <div>道路ノード: ${graph.nodes.size.toLocaleString()} / 道路接続: ${Math.round(edgeCount / 2).toLocaleString()} / 避難場所: ${shelterCount.toLocaleString()} / 危険区域: ${escapeHtml(hazardText)}</div>
+      <div>通信OFF時もGPS取得を試行し、保存済み道路から端末内A*で新規避難経路を計算します。リアルタイム警報・交通・混雑などの新着情報は通信復旧まで更新されません。</div>`;
+    renderOfflinePackStatus();
   }
 
   function startTsunamiDemo() {
@@ -2143,6 +2606,157 @@ function handleReportSubmit(event) {
     update();
   }
 
+  let deferredInstallPrompt = null;
+
+  function isIosDevice() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  function isAndroidDevice() {
+    return /android/i.test(navigator.userAgent);
+  }
+
+  function isStandaloneApp() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  function installPlatformName() {
+    if (isIosDevice()) return 'iPhone / iPad';
+    if (isAndroidDevice()) return 'Android';
+    return 'この端末';
+  }
+
+  function updateInstallButton() {
+    const button = el('installAppButton');
+    const menuButton = el('installAppMenuButton');
+    const installed = isStandaloneApp();
+    if (button) {
+      button.textContent = installed ? '起動中' : 'アプリ';
+      button.disabled = installed;
+      button.classList.toggle('is-installed', installed);
+    }
+    if (menuButton) {
+      menuButton.textContent = installed ? 'アプリで起動中' : 'アプリを追加';
+      menuButton.disabled = installed;
+    }
+  }
+
+  function installInstructionsHtml() {
+    if (isStandaloneApp()) {
+      return '<ol><li>この画面はすでにアプリとして起動しています。</li><li>ホーム画面の「鎌倉避難」からいつでも起動できます。</li></ol>';
+    }
+
+    if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      return '<ol><li>スマートフォンへの追加にはHTTPSでの公開が必要です。</li><li>HTTPSのURLで開き直してから「アプリ」を押してください。</li></ol>';
+    }
+
+    if (isIosDevice()) {
+      return '<ol><li>Safariでこのページを開きます。</li><li>画面下の共有ボタンを押します。</li><li>「ホーム画面に追加」を選びます。</li><li>右上の「追加」を押します。</li></ol>';
+    }
+
+    if (isAndroidDevice()) {
+      if (deferredInstallPrompt) {
+        return '<ol><li>下の「インストール」を押します。</li><li>確認画面でもう一度「インストール」を選びます。</li></ol>';
+      }
+      return '<ol><li>Chromeの右上メニューを開きます。</li><li>「アプリをインストール」または「ホーム画面に追加」を選びます。</li><li>表示された確認画面で追加します。</li></ol>';
+    }
+
+    if (deferredInstallPrompt) {
+      return '<ol><li>下の「インストール」を押します。</li><li>ブラウザの確認画面でインストールします。</li></ol>';
+    }
+
+    return '<ol><li>ブラウザのメニューを開きます。</li><li>「アプリをインストール」または「ホーム画面に追加」を選びます。</li></ol>';
+  }
+
+  function openInstallSheet() {
+    const sheet = el('installSheet');
+    const backdrop = el('installSheetBackdrop');
+    if (!sheet || !backdrop) return;
+
+    el('installPlatformLabel').textContent = `${installPlatformName()}に追加`;
+    el('installInstructions').innerHTML = installInstructionsHtml();
+
+    const secureEnough = window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    const status = el('installStatus');
+    if (isStandaloneApp()) {
+      status.textContent = 'インストール済み';
+      status.className = 'install-status installed';
+    } else if (!secureEnough) {
+      status.textContent = 'HTTPSで開くとインストールできます';
+      status.className = 'install-status warning';
+    } else if (isIosDevice()) {
+      status.textContent = 'Safariの「ホーム画面に追加」を使用します';
+      status.className = 'install-status ready';
+    } else if (deferredInstallPrompt) {
+      status.textContent = 'この端末にインストールできます';
+      status.className = 'install-status ready';
+    } else {
+      status.textContent = 'ブラウザのメニューから追加できます';
+      status.className = 'install-status ready';
+    }
+
+    const installNow = el('installNowButton');
+    installNow.hidden = !(deferredInstallPrompt && !isStandaloneApp() && secureEnough && !isIosDevice());
+
+    backdrop.hidden = false;
+    sheet.hidden = false;
+    document.body.classList.add('install-sheet-open');
+    setTimeout(() => el('closeInstallSheet')?.focus(), 0);
+  }
+
+  function closeInstallSheet() {
+    const sheet = el('installSheet');
+    const backdrop = el('installSheetBackdrop');
+    if (sheet) sheet.hidden = true;
+    if (backdrop) backdrop.hidden = true;
+    document.body.classList.remove('install-sheet-open');
+  }
+
+  async function triggerInstallPrompt() {
+    if (!deferredInstallPrompt) {
+      openInstallSheet();
+      return;
+    }
+
+    const promptEvent = deferredInstallPrompt;
+    deferredInstallPrompt = null;
+    promptEvent.prompt();
+    try {
+      await promptEvent.userChoice;
+    } catch (_) {}
+    updateInstallButton();
+    closeInstallSheet();
+  }
+
+  function setupInstallSystem() {
+    updateInstallButton();
+
+    el('installAppButton')?.addEventListener('click', openInstallSheet);
+    el('installAppMenuButton')?.addEventListener('click', () => {
+      el('headerMenu')?.removeAttribute('open');
+      openInstallSheet();
+    });
+    el('closeInstallSheet')?.addEventListener('click', closeInstallSheet);
+    el('installDoneButton')?.addEventListener('click', closeInstallSheet);
+    el('installSheetBackdrop')?.addEventListener('click', closeInstallSheet);
+    el('installNowButton')?.addEventListener('click', triggerInstallPrompt);
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      updateInstallButton();
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      updateInstallButton();
+      closeInstallSheet();
+      showToast('アプリをホーム画面に追加しました。');
+    });
+
+    window.matchMedia('(display-mode: standalone)').addEventListener?.('change', updateInstallButton);
+  }
+
   function bindEvents() {
     el('heroLocateButton').addEventListener('click', () => {
       showScreen('map');
@@ -2156,7 +2770,9 @@ function handleReportSubmit(event) {
     el('headerGpsButton')?.addEventListener('click', () => getCurrentPosition({ force: true, recordTrack: true }));
     el('headerTopButton')?.addEventListener('click', () => showScreen('map'));
     el('offlinePrepareButton')?.addEventListener('click', prepareOfflineView);
-    el('offlinePanelSaveButton')?.addEventListener('click', prepareOfflineView);
+    el('offlinePanelSaveButton')?.addEventListener('click', installFullOfflinePack);
+    el('offlinePackDeleteButton')?.addEventListener('click', deleteFullOfflinePack);
+    el('refreshStorageUsageButton')?.addEventListener('click', refreshStorageUsage);
     el('scenarioDemoButton')?.addEventListener('click', startTsunamiDemo);
     el('transportDemoButton')?.addEventListener('click', () => {
       state.transportDisruption = !state.transportDisruption;
@@ -2227,16 +2843,20 @@ function handleReportSubmit(event) {
     });
     document.querySelectorAll('[data-screen-target]').forEach((button) => button.addEventListener('click', () => showScreen(button.dataset.screenTarget)));
     document.querySelectorAll('.language-button').forEach((button) => button.addEventListener('click', () => setLanguage(button.dataset.lang)));
-    window.addEventListener('online', () => { updateNetworkState(); renderOfflineMetrics(); });
-    window.addEventListener('offline', () => { updateNetworkState(); renderOfflineMetrics(); });
+    window.addEventListener('online', () => { updateNetworkState(); renderOfflineMetrics(); renderOfflinePackStatus(); });
+    window.addEventListener('offline', () => { updateNetworkState(); renderOfflineMetrics(); renderOfflinePackStatus(); });
     window.addEventListener('resize', () => state.map && state.map.invalidateSize());
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (window.KAMAKURA_OFFLINE_PACK) {
+      try { state.offlinePack = await window.KAMAKURA_OFFLINE_PACK.load(); } catch (_) { state.offlinePack = null; }
+    }
     bindEvents();
     setupProtocolWarning();
     setupHeaderMenu();
     setupBackToTop();
+    setupInstallSystem();
     initMap();
     showScreen('map', { scroll: false });
     setLanguage('ja');
@@ -2248,6 +2868,9 @@ function handleReportSubmit(event) {
     renderNotifications();
     renderAdmin();
     renderOfflineMetrics();
+
+    renderOfflinePackStatus();
+    refreshStorageUsage();
 
     // Firebaseから承認済みの通行不可情報を取得
     loadFirebaseReports();
@@ -2263,3 +2886,11 @@ function handleReportSubmit(event) {
     state.reportTrack = [];
   });
 })();
+
+
+
+
+
+
+
+
