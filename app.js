@@ -225,6 +225,42 @@
     { id: 'sp-kamakura-womens', name: '鎌倉女子大学大船キャンパス', category: '広域避難場所', position: [35.35380, 139.53570], area: '大船' }
   ];
 
+  // 混雑対象期間中だけ、鶴岡八幡宮境内・若宮大路・小町通り周辺の避難先を候補から外す。
+  const ANNUAL_CROWD_RISK_PERIODS = [
+    { start: [1, 1], end: [1, 3], label: '初詣期' },
+    { start: [9, 14], end: [9, 16], label: '例大祭' }
+  ];
+  // 紅葉・行楽シーズンなど、年ごとに指定する追加期間（日本時間）。
+  // 例: { start: '2026-11-21', end: '2026-11-23', label: '紅葉・行楽シーズン' }
+  const EXTRA_CROWD_RISK_PERIODS = [];
+  const CROWD_RISK_CANDIDATE_IDS = new Set(['tsurugaoka-hachimangu', 'first-elementary']);
+  const CROWD_RISK_SAFE_POINT_IDS = new Set([
+    'sp-hachimangu', 'sp-kamakura-police', 'sp-kamakura-chokai', 'sp-sakurai-building'
+  ]);
+
+  function isCrowdRiskPeriodActive(now = new Date()) {
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    const annualMatch = ANNUAL_CROWD_RISK_PERIODS.some(({ start, end }) => {
+      const afterStart = month > start[0] || (month === start[0] && day >= start[1]);
+      const beforeEnd = month < end[0] || (month === end[0] && day <= end[1]);
+      return afterStart && beforeEnd;
+    });
+    if (annualMatch) return true;
+    const today = `${now.getFullYear()}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return EXTRA_CROWD_RISK_PERIODS.some(({ start, end }) => today >= start && today <= end);
+  }
+
+  function isCrowdRiskCandidate(candidate) {
+    return isCrowdRiskPeriodActive() && CROWD_RISK_CANDIDATE_IDS.has(candidate.id);
+  }
+
+  function getVisibleTsunamiSafePoints() {
+    return isCrowdRiskPeriodActive()
+      ? TSUNAMI_SAFE_POINTS.filter((point) => !CROWD_RISK_SAFE_POINT_IDS.has(point.id))
+      : TSUNAMI_SAFE_POINTS;
+  }
+
   const HAZARD_CONFIG = {
     none: {
       label: { ja: '表示なし', en: 'No hazard overlay', zh: '不显示灾害图层' },
@@ -508,12 +544,11 @@
     locationRequestInProgress: false, permissionState: 'unknown',
     reports: loadJson(REPORTS_KEY, []),
     firebaseReports: [],
-    firebasePendingClusters: []
+    firebaseReviewGroups: [],
     shelterStatus: loadJson(SHELTER_STATUS_KEY, {}),
     congestionDemo: Boolean(loadJson(CONGESTION_KEY, false)),
     transportDisruption: Boolean(loadJson(TRANSPORT_KEY, false)),
     reportMarkers: [],
-    reportClusterLayers: []
     congestionLayers: [],
     reportPickMode: false,
     reportTrack: [],
@@ -989,7 +1024,7 @@
     const hazard = primaryHazard();
     const tsunamiMode = isTsunamiPriorityMode();
     return EVACUATION_CANDIDATES
-      .filter((item) => item.hazards.includes(hazard) && isShelterOpen(item.id))
+      .filter((item) => item.hazards.includes(hazard) && isShelterOpen(item.id) && !isCrowdRiskCandidate(item))
       .map((item) => ({
         ...item,
         distance: state.userPosition ? haversine(state.userPosition, { lat: item.position[0], lng: item.position[1] }) : null,
@@ -1156,7 +1191,7 @@
     state.safePointMarkers.forEach(({ marker }) => marker.remove());
     state.safePointMarkers = [];
     if (!state.safePointLayerVisible) return;
-    state.safePointMarkers = TSUNAMI_SAFE_POINTS.map((point) => {
+    state.safePointMarkers = getVisibleTsunamiSafePoints().map((point) => {
       const marker = L.marker(point.position, { icon: safePointIcon(point.category), zIndexOffset: 250 }).addTo(state.map);
       marker.bindPopup(createSafePointPopup(point), { autoClose: true, closeOnClick: true, closeButton: true, className: 'candidate-leaflet-popup' });
       return { id: point.id, marker };
@@ -1170,7 +1205,7 @@
       list.innerHTML = '<div class="empty-state">現在地を取得すると到着目安を表示します。</div>';
       return;
     }
-    const items = TSUNAMI_SAFE_POINTS
+    const items = getVisibleTsunamiSafePoints()
       .map((point) => ({ ...point, walk: estimatedWalk(point) }))
       .sort((a, b) => (a.walk?.minutes || Infinity) - (b.walk?.minutes || Infinity));
     list.innerHTML = items.map((point) => `
@@ -2103,31 +2138,85 @@
       if (!state.reports.length) {
         list.innerHTML = '<div class="empty-state">登録された通行不可情報はありません。</div>';
       } else {
-        list.innerHTML = state.reports.slice().reverse().map((report) => `<article class="report-item"><div><strong>${escapeHtml(reportTypeLabel(report.type))}</strong><p>${escapeHtml(report.note || '補足なし')} / ${report.lat.toFixed(5)}, ${report.lng.toFixed(5)}</p></div><button class="report-delete" type="button" data-report-delete="${report.id}">削除</button></article>`).join('');
-        list.querySelectorAll('[data-report-delete]').forEach((button) => button.addEventListener('click', () => {
-          state.reports = state.reports.filter((report) => report.id !== button.dataset.reportDelete);
-          saveJson(REPORTS_KEY, state.reports);
-          mirrorReportsToIndexedDb();
-          renderReports();
-          renderOperationalLayers();
-          clearRoute();
-        }));
+        const rows = state.reports.slice().reverse();
+        list.innerHTML = rows.map((report, index) => {
+          const statusLabel = report.status === 'pending' ? ' / 承認待ち' : report.status === 'approved' ? ' / 承認済み' : '';
+          const canDelete = !String(report.id).startsWith('firebase-');
+          const deleteButton = canDelete ? `<button class="report-delete" type="button" data-report-delete="${index}">削除</button>` : '';
+          return `<article class="report-item"><div><strong>${escapeHtml(reportTypeLabel(report.type))}${statusLabel}</strong><p>${escapeHtml(report.note || '補足なし')} / ${report.lat.toFixed(5)}, ${report.lng.toFixed(5)}</p></div>${deleteButton}</article>`;
+        }).join('');
+        list.querySelectorAll('[data-report-delete]').forEach((button) => button.addEventListener('click', () => deleteReportFromList(Number(button.dataset.reportDelete))));
       }
     }
     renderOperationalLayers();
   }
 
-  function reportMarkerIcon() {
+  async function deleteReportFromList(reverseIndex) {
+    const report = state.reports.slice().reverse()[reverseIndex];
+    if (!report || !window.confirm('この投稿を削除しますか？')) return;
+
+    if (!firestoreDb) {
+      showToast('Firebaseに接続できないため、投稿を削除できません。通信状態を確認してください。');
+      return;
+    }
+
+    try {
+      let documentId = report.firebaseDocId ||
+        (String(report.id).startsWith('firebase-') ? String(report.id).slice('firebase-'.length) : null);
+
+      if (!documentId) {
+        const snapshot = await firestoreDb.collection('reports').get();
+        const candidates = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const lat = Number(data.reportLat ?? data.lat);
+          const lng = Number(data.reportLng ?? data.lng);
+          const note = data.message ?? data.note ?? '';
+          const type = data.type || 'blocked';
+          if (type === report.type && note === (report.note || '') &&
+              Number.isFinite(lat) && Number.isFinite(lng) &&
+              Math.abs(lat - report.lat) < 1e-7 && Math.abs(lng - report.lng) < 1e-7) {
+            const rawTime = data.createdAt ?? data.created_at;
+            const createdAt = rawTime?.toMillis ? rawTime.toMillis() :
+              (typeof rawTime === 'number' ? rawTime : (Date.parse(rawTime) || 0));
+            candidates.push({ id: doc.id, createdAt });
+          }
+        });
+        candidates.sort((a, b) =>
+          Math.abs(a.createdAt - (report.createdAt || 0)) - Math.abs(b.createdAt - (report.createdAt || 0))
+        );
+        documentId = candidates[0]?.id || null;
+      }
+
+      if (documentId) {
+        await firestoreDb.collection('reports').doc(documentId).delete();
+      } else if (report.status === 'pending' || report.status === 'approved') {
+        showToast('Firebase上の投稿を特定できませんでした。投稿一覧を更新してから再度お試しください。');
+        return;
+      }
+
+      state.reports = state.reports.filter((item) => item.id !== report.id);
+      saveJson(REPORTS_KEY, state.reports);
+      mirrorReportsToIndexedDb();
+      renderReports();
+      clearRoute();
+      showToast(documentId ? '投稿をFirebaseから削除しました。' : '端末内の投稿を削除しました。');
+    } catch (error) {
+      console.error('投稿の削除に失敗しました。', error);
+      const message = error?.code === 'permission-denied'
+        ? 'Firebaseの削除権限がありません。Firestoreルールで reports の delete を許可してください。'
+        : 'Firebaseから削除できませんでした。通信状態を確認して再度お試しください。';
+      showToast(message);
+    }
+  }  function reportMarkerIcon() {
     return L.divIcon({ className: 'report-pin-shell', html: '<span class="report-pin">!</span>', iconSize: [34, 34], iconAnchor: [17, 17] });
   }
 
   function renderOperationalLayers() {
     if (!state.map || typeof L === 'undefined') return;
     state.reportMarkers.forEach((marker) => state.map.removeLayer(marker));
-    state.reportClusterLayers.forEach((layer) => state.map.removeLayer(layer));
     state.congestionLayers.forEach((layer) => state.map.removeLayer(layer));
     state.reportMarkers = [];
-    state.reportClusterLayers = [];
     state.congestionLayers = [];
 
     state.reports.forEach((report) => {
@@ -2135,16 +2224,6 @@
       const marker = L.marker([report.lat, report.lng], { icon: reportMarkerIcon(), zIndexOffset: 850 }).addTo(state.map);
       marker.bindPopup(`<strong>${escapeHtml(reportTypeLabel(report.type))}</strong><br>${escapeHtml(report.note || '補足なし')}`);
       state.reportMarkers.push(marker);
-    });
-
-    const approvedAreas = new Map();
-    state.firebaseReports.filter((report) => report.status === 'approved' && report.approvalClusterId && Number.isFinite(report.approvalCenterLat) && Number.isFinite(report.approvalCenterLng)).forEach((report) => {
-      if (!approvedAreas.has(report.approvalClusterId)) approvedAreas.set(report.approvalClusterId, report);
-    });
-    approvedAreas.forEach((report) => {
-      const area = L.circle([report.approvalCenterLat, report.approvalCenterLng], { radius: report.approvalRadiusM || 500, color: '#b63d36', weight: 2, dashArray: '7 5', fillColor: '#b63d36', fillOpacity: 0.12 }).addTo(state.map);
-      area.bindPopup(`<strong>承認済み投稿範囲</strong><br>約1km以内・${Number(report.approvalCount) || 2}件`);
-      state.reportClusterLayers.push(area);
     });
 
     if (state.congestionDemo) {
@@ -2458,7 +2537,8 @@ function handleReportSubmit(event) {
     }
 
     try {
-      await firestoreDb.collection('reports').add({
+      const document = await firestoreDb.collection('reports').add({
+        clientReportId: report.id,
         type: report.type,
         message: report.note || '',
         reportLat: report.lat,
@@ -2466,6 +2546,14 @@ function handleReportSubmit(event) {
         status: 'pending',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+      const localReport = state.reports.find((item) => item.id === report.id);
+      if (localReport) {
+        localReport.firebaseDocId = document.id;
+        saveJson(REPORTS_KEY, state.reports);
+        renderReports();
+      } else {
+        await firestoreDb.collection('reports').doc(document.id).delete();
+      }
 
       console.log('Firebaseに通行不可情報を保存しました。');
       console.log(report);
@@ -2497,19 +2585,20 @@ function handleReportSubmit(event) {
     return best && best.radius <= 500 ? best : null;
   }
 
-  function clusterPendingFirebaseReports(reports) {
-    const pending = reports.filter((report) => report.status === 'pending' || !report.status)
+  function groupFirebaseReportsByArea(reports) {
+    const eligibleForGrouping = reports.filter((report) => !report.status || report.status === 'pending' || report.status === 'approved')
       .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
     const groups = [];
-    pending.forEach((report) => {
+    eligibleForGrouping.forEach((report) => {
       const group = groups.find((items) => findFirebaseReviewCircle([...items, report]));
       if (group) group.push(report);
       else groups.push([report]);
     });
-    return groups;
+    return groups.filter((group) => group.length >= 2 && findFirebaseReviewCircle(group));
   }
+
   function renderFirebaseAdminReports() {
-    const host = el('firebaseReportClusters');
+    const host = el('firebaseReportList');
     const status = el('firebaseAdminStatus');
     if (!host || !status) return;
     if (!firestoreDb) {
@@ -2517,54 +2606,42 @@ function handleReportSubmit(event) {
       host.innerHTML = '<div class="empty-state">投稿を取得できません。</div>';
       return;
     }
-    const groups = clusterPendingFirebaseReports(state.firebaseReports);
-    const qualified = groups.filter((group) => group.length >= 2);
-    const singles = groups.filter((group) => group.length === 1);
-    const approvedCount = state.firebaseReports.filter((report) => report.status === 'approved').length;
+    const groups = groupFirebaseReportsByArea(state.firebaseReports);
     const pendingCount = state.firebaseReports.filter((report) => report.status === 'pending' || !report.status).length;
-    state.firebasePendingClusters = qualified;
-    status.textContent = `未承認 ${pendingCount}件 / 条件を満たす範囲 ${qualified.length}件 / 承認済み ${approvedCount}件`;
-
-    const clusterHtml = qualified.map((group, index) => {
+    const approvedCount = state.firebaseReports.filter((report) => report.status === 'approved').length;
+    state.firebaseReviewGroups = groups;
+    status.textContent = `投稿 ${state.firebaseReports.length}件 / 直径1km以内の複数投稿範囲 ${groups.length}件 / 承認待ち ${pendingCount}件 / 承認済み ${approvedCount}件`;
+    if (!groups.length) {
+      host.innerHTML = '<div class="empty-state">直径1km以内に2件以上集まった投稿範囲はありません。</div>';
+      return;
+    }
+    host.innerHTML = groups.map((group, groupIndex) => {
       const range = findFirebaseReviewCircle(group);
-      const centerLat = range.center.lat;
-      const centerLng = range.center.lng;
-      const items = group.map((report) => `<li><strong>${escapeHtml(reportTypeLabel(report.type))}</strong> — ${escapeHtml(report.note || '補足なし')}<small>${report.lat.toFixed(5)}, ${report.lng.toFixed(5)} / ${new Date(report.createdAt || Date.now()).toLocaleString()}</small></li>`).join('');
-      return `<article class="firebase-cluster-card"><div class="firebase-cluster-head"><div><strong>承認待ち範囲 ${index + 1}：${group.length}件</strong><div class="firebase-cluster-meta">全投稿が互いに1km以内 / 中心 ${centerLat.toFixed(5)}, ${centerLng.toFixed(5)}</div></div><span class="priority-badge">承認待ち</span></div><ul class="firebase-cluster-items">${items}</ul><button class="primary-button inline-button firebase-cluster-approve" type="button" data-firebase-cluster-approve="${index}">この範囲を許可して地図に表示</button></article>`;
+      const rows = group.map((report, reportIndex) => {
+        const isPending = report.status === 'pending' || !report.status;
+        const label = isPending ? '承認待ち' : report.status === 'approved' ? '承認済み・地図に表示中' : escapeHtml(report.status);
+        const action = isPending ? `<button class="primary-button inline-button firebase-report-approve" type="button" data-firebase-group="${groupIndex}" data-firebase-report="${reportIndex}">この投稿を承認して地図に表示</button>` : '';
+        return `<li class="firebase-report-item"><div class="firebase-report-head"><strong>${escapeHtml(reportTypeLabel(report.type))}</strong><span class="priority-badge">${label}</span></div><p class="firebase-report-message">${escapeHtml(report.note || '補足なし')}</p><div class="firebase-report-meta">投稿位置：${report.lat.toFixed(6)}, ${report.lng.toFixed(6)}<br>投稿日時：${new Date(report.createdAt || Date.now()).toLocaleString()}</div>${action}</li>`;
+      }).join('');
+      return `<article class="firebase-report-group"><div class="firebase-report-group-head"><strong>確認範囲 ${groupIndex + 1}：${group.length}件</strong><span>直径1km以内 / 中心 ${range.center.lat.toFixed(5)}, ${range.center.lng.toFixed(5)}</span></div><ul class="firebase-report-items">${rows}</ul></article>`;
     }).join('');
-    const singlesHtml = singles.length ? `<article class="firebase-cluster-card"><strong>複数投稿待ち：${singles.length}件</strong><p class="firebase-cluster-wait">直径1km以内に2件以上集まるまで、地図には表示されません。</p><ul class="firebase-cluster-items">${singles.map((group) => `<li>${escapeHtml(reportTypeLabel(group[0].type))} — ${escapeHtml(group[0].note || '補足なし')}<small>${group[0].lat.toFixed(5)}, ${group[0].lng.toFixed(5)}</small></li>`).join('')}</ul></article>` : '';
-    host.innerHTML = clusterHtml || singlesHtml ? `${clusterHtml}${singlesHtml}` : '<div class="empty-state">未承認のFirebase投稿はありません。</div>';
-    host.querySelectorAll('[data-firebase-cluster-approve]').forEach((button) => button.addEventListener('click', () => approveFirebaseCluster(Number(button.dataset.firebaseClusterApprove))));
+    host.querySelectorAll('[data-firebase-group][data-firebase-report]').forEach((button) => button.addEventListener('click', () => approveFirebaseReport(Number(button.dataset.firebaseGroup), Number(button.dataset.firebaseReport))));
   }
 
-  async function approveFirebaseCluster(index) {
-    const group = state.firebasePendingClusters[index];
-    if (!firestoreDb || !group || group.length < 2) return;
-    const range = findFirebaseReviewCircle(group);
-      const centerLat = range.center.lat;
-    const centerLng = range.center.lng;
-    const clusterId = `approved-${group.map((report) => report.docId).sort()[0]}`;
-    const batch = firebase.firestore().batch();
-    group.forEach((report) => {
-      batch.update(firestoreDb.collection('reports').doc(report.docId), {
-        status: 'approved',
-        approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        approvalClusterId: clusterId,
-        approvalCenterLat: centerLat,
-        approvalCenterLng: centerLng,
-        approvalRadiusM: 500,
-        approvalCount: group.length
-      });
-    });
+  async function approveFirebaseReport(groupIndex, reportIndex) {
+    const report = state.firebaseReviewGroups[groupIndex]?.[reportIndex];
+    if (!firestoreDb || !report || report.status === 'approved') return;
     try {
-      await batch.commit();
-      showToast(`${group.length}件の投稿を許可し、地図に表示します。`);
+      await firestoreDb.collection('reports').doc(report.docId).update({
+        status: 'approved',
+        approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showToast('投稿を承認しました。地図に表示します。');
     } catch (error) {
       console.error('Firebase投稿の承認に失敗しました。', error);
       showToast('承認できませんでした。Firebaseの書き込み権限を確認してください。');
     }
   }
-
   function loadFirebaseReports() {
     if (!firestoreDb) {
       renderFirebaseAdminReports();
@@ -2579,8 +2656,9 @@ function handleReportSubmit(event) {
         if (typeof data.reportLat !== 'number' || typeof data.reportLng !== 'number') return;
         allReports.push({
           docId: doc.id,
+          clientReportId: data.clientReportId || null,
           type: data.type || 'blocked',
-          note: data.message || '通行不可情報',
+          note: data.message || '',
           lat: data.reportLat,
           lng: data.reportLng,
           status: data.status || 'pending',
@@ -2593,8 +2671,17 @@ function handleReportSubmit(event) {
         });
       });
       state.firebaseReports = allReports;
-      const approved = allReports.filter((report) => report.status === 'approved').map((report) => ({ ...report, id: `firebase-${report.docId}` }));
       const localReports = state.reports.filter((report) => !String(report.id).startsWith('firebase-'));
+      const matchedDocIds = new Set();
+      allReports.forEach((remote) => {
+        let local = localReports.find((report) => report.firebaseDocId === remote.docId || (remote.clientReportId && report.id === remote.clientReportId));
+        if (!local) local = localReports.find((report) => !report.firebaseDocId && !matchedDocIds.has(remote.docId) && report.type === remote.type && report.note === remote.note && Math.abs(report.lat - remote.lat) < 1e-8 && Math.abs(report.lng - remote.lng) < 1e-8);
+        if (!local) return;
+        local.firebaseDocId = remote.docId;
+        local.status = remote.status;
+        matchedDocIds.add(remote.docId);
+      });
+      const approved = allReports.filter((report) => report.status === 'approved' && !matchedDocIds.has(report.docId)).map((report) => ({ ...report, id: `firebase-${report.docId}` }));
       state.reports = [...localReports, ...approved];
       renderReports();
       renderOperationalLayers();
@@ -2950,6 +3037,15 @@ function handleReportSubmit(event) {
     restoreSavedState();
     renderCandidates();
     refreshSafePoints();
+    let crowdRiskWasActive = isCrowdRiskPeriodActive();
+    window.setInterval(() => {
+      const active = isCrowdRiskPeriodActive();
+      if (active !== crowdRiskWasActive) {
+        crowdRiskWasActive = active;
+        renderCandidates();
+        refreshSafePoints();
+      }
+    }, 60000);
     renderTransportStatus();
     renderReports();
     renderNotifications();
@@ -2973,6 +3069,26 @@ function handleReportSubmit(event) {
     state.reportTrack = [];
   });
 })();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

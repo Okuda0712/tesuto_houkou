@@ -1,9 +1,9 @@
-const CACHE_NAME = 'kamakura-disaster-cache-v41';
+const CACHE_NAME = 'kamakura-disaster-cache-v49-crowd-reset';
 const TILE_CACHE_NAME = 'kamakura-disaster-tile-cache-v14';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './app.js',
+  './app.js?v=20261107-crowd49',
   './offline-data.js',
   './offline-pack.js',
   './jma-ui.js',
@@ -125,6 +125,14 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(clients.openWindow(event.notification.data?.url || './'));
 });
+
+
+
+
+
+
+
+
 
 
 
