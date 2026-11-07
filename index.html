@@ -49,29 +49,29 @@
       <div class="brand-mark" aria-hidden="true"></div>
       <div class="brand-copy">
         <h1>鎌倉市 災害避難支援</h1>
-        <p data-i18n="locationStatusLabel">観光客向け防災案内</p>
+        <p>観光客向け防災案内</p>
       </div>
     </div>
 
     <div class="header-alert" id="emergency">
       <span class="header-alert-mark" aria-hidden="true">!</span>
       <strong>重要なお知らせ</strong>
-      <span data-i18n="networkLabel">このシステムは授業用の試作です。実際の災害時は自治体・気象庁・警察・消防の情報を確認してください。</span>
+      <span>このシステムは授業用の試作です。実際の災害時は自治体・気象庁・警察・消防の情報を確認してください。</span>
     </div>
 
     <div class="utility-actions">
-      <button class="header-action-button" id="headerTopButton" data-i18n="backTop" type="button">トップ</button>
-      <button class="header-action-button" id="headerGpsButton" data-i18n="forceGps" type="button">現在地</button>
+      <button class="header-action-button" id="headerTopButton" type="button" data-i18n="backTop">トップ</button>
+      <button class="header-action-button" id="headerGpsButton" type="button" data-i18n="forceGps">現在地</button>
       <button class="header-action-button install-app-button" id="installAppButton" type="button">アプリ</button>
       <details class="header-menu" id="headerMenu">
-        <summary data-i18n="menuTitle">メニュー</summary>
+        <summary>メニュー</summary>
         <div class="header-menu-panel">
           <button type="button" data-screen-target="map">地図</button>
           <button type="button" data-screen-target="destinations">避難先</button>
           <button type="button" data-screen-target="guidance">行動</button>
           <button type="button" data-screen-target="transport">交通</button>
           <button type="button" data-screen-target="report">報告</button>
-          <button type="button" data-screen-target="notifications" data-i18n="navNotifications">通知</button>
+          <button type="button" data-screen-target="notifications">通知</button>
           <button type="button" data-screen-target="offline">保存</button>
           <button type="button" id="installAppMenuButton">アプリを追加</button>
           <button type="button" data-screen-target="admin">管理</button>
@@ -88,7 +88,7 @@
 
   <div class="protocol-warning" id="localFileWarning" hidden>
     <strong>このページを「ファイル」として直接開いています。</strong>
-    <span data-i18n="networkLabel">位置情報の許可保持とオフライン機能を有効にするには、同梱の start_server.bat から起動してください。</span>
+    <span>位置情報の許可保持とオフライン機能を有効にするには、同梱の start_server.bat から起動してください。</span>
     <button type="button" id="closeProtocolWarning" aria-label="閉じる">×</button>
   </div>
 
@@ -106,7 +106,7 @@
         <img src="icon-192.png" alt="">
         <div>
           <strong>鎌倉避難</strong>
-          <span data-i18n="networkLabel">ホーム画面からすぐ起動できます</span>
+          <span>ホーム画面からすぐ起動できます</span>
         </div>
       </div>
       <div class="install-status" id="installStatus"></div>
@@ -124,7 +124,7 @@
         <div class="side-brand">
           <div>
             <strong>地図の設定</strong>
-            <span data-i18n="networkLabel">現在地と危険情報</span>
+            <span>現在地と危険情報</span>
           </div>
         </div>
 
@@ -149,21 +149,21 @@
                   <label class="hazard-check"><span data-hazard-label="hightide">高潮浸水想定</span><input type="checkbox" name="hazardLayer" value="hightide"><i></i></label>
                   <label class="hazard-check"><span data-hazard-label="landslide">土砂災害警戒区域</span><input type="checkbox" name="hazardLayer" value="landslide"><i></i></label>
                 </div>
-                <button class="clear-hazard-button" id="clearHazardsButton" data-i18n="clearHazards" type="button">すべて解除</button>
+                <button class="clear-hazard-button" id="clearHazardsButton" type="button" data-i18n="clearHazards">すべて解除</button>
               </fieldset>
 
-              <button class="primary-button locate-main-button" id="locateButton" type="button"><span aria-hidden="true">GPS</span><span data-i18n="networkLabel">現在地を取得</span></button>
-              <button class="secondary-button" id="trackButton" data-i18n="startTracking" type="button">追跡</button>
-              <button class="secondary-button" id="resetMapButton" data-i18n="resetMap" type="button">全体</button>
-              <button class="secondary-button" id="offlinePrepareButton" data-i18n="prepareOffline" type="button">保存</button>
+              <button class="primary-button locate-main-button" id="locateButton" type="button"><span aria-hidden="true">GPS</span><span>現在地を取得</span></button>
+              <button class="secondary-button" id="trackButton" type="button" data-i18n="startTracking">追跡</button>
+              <button class="secondary-button" id="resetMapButton" type="button" data-i18n="resetMap">全体</button>
+              <button class="secondary-button" id="offlinePrepareButton" type="button" data-i18n="prepareOffline">保存</button>
 
-              <div class="demo-divider"><span data-i18n="networkLabel">発表用デモ</span></div>
-              <button class="scenario-button" id="scenarioDemoButton" data-i18n="startScenario" type="button">津波デモ</button>
+              <div class="demo-divider"><span>発表用デモ</span></div>
+              <button class="scenario-button" id="scenarioDemoButton" type="button">津波デモ</button>
               <details class="demo-controls">
-                <summary data-i18n="menuTitle">デモ位置を選択</summary>
+                <summary>デモ位置を選択</summary>
                 <div>
-                  <button class="text-button" id="demoStationButton" data-i18n="useStationDemo" type="button">鎌倉駅</button>
-                  <button class="text-button" id="demoCoastButton" data-i18n="useCoastDemo" type="button">由比ヶ浜</button>
+                  <button class="text-button" id="demoStationButton" type="button">鎌倉駅</button>
+                  <button class="text-button" id="demoCoastButton" type="button">由比ヶ浜</button>
                 </div>
               </details>
             </div>
@@ -171,7 +171,7 @@
             
         <div class="side-bottom">
 <div class="side-status">
-            <span data-i18n="networkLabel">通信状態</span>
+            <span>通信状態</span>
             <strong id="networkState">オンライン</strong>
             <small id="gpsState">GPS未取得</small>
           </div>
@@ -223,15 +223,15 @@
         <section class="status-grid" id="statusCards" aria-label="現在の状態">
           <article class="status-card">
             <span class="status-icon" aria-hidden="true">◎</span>
-            <div><p data-i18n="locationStatusLabel">現在地</p><strong id="locationSummary">未取得</strong></div>
+            <div><p>現在地</p><strong id="locationSummary">未取得</strong></div>
           </article>
           <article class="status-card">
             <span class="status-icon" aria-hidden="true">層</span>
-            <div><p data-i18n="locationStatusLabel">表示中のハザード</p><strong id="disasterSummary">津波浸水想定</strong></div>
+            <div><p>表示中のハザード</p><strong id="disasterSummary">津波浸水想定</strong></div>
           </article>
           <article class="status-card">
             <span class="status-icon" aria-hidden="true">↗</span>
-            <div><p data-i18n="locationStatusLabel">徒歩経路</p><strong id="routeSummary">未選択</strong></div>
+            <div><p>徒歩経路</p><strong id="routeSummary">未選択</strong></div>
           </article>
         </section>
       </section>
@@ -247,7 +247,7 @@
             </div>
             <span class="count-badge" id="candidateCount">0</span>
           </div>
-          <p class="candidate-note"><strong>近くの避難先</strong><span data-i18n="networkLabel">近い順・安全性を考慮して表示</span></p>
+          <p class="candidate-note"><strong>近くの避難先</strong><span>近い順・安全性を考慮して表示</span></p>
           <div id="candidateList" class="candidate-list" aria-live="polite">
             <div class="empty-state">現在地を取得すると候補を表示します。</div>
           </div>
@@ -259,22 +259,22 @@
               
               <h3>高台・津波のとき場所</h3>
             </div>
-            <label class="safe-point-toggle"><input type="checkbox" id="safePointToggle" checked><span data-i18n="networkLabel">地図に表示</span></label>
+            <label class="safe-point-toggle"><input type="checkbox" id="safePointToggle" checked><span>地図に表示</span></label>
           </div>
-          <p class="candidate-note"><strong>津波のとき</strong><span data-i18n="networkLabel">徒歩時間は目安</span></p>
+          <p class="candidate-note"><strong>津波のとき</strong><span>徒歩時間は目安</span></p>
           <div id="safePointList" class="safe-point-list" aria-live="polite">
             <div class="empty-state">現在地を取得すると到着目安を表示します。</div>
           </div>
         </div>
       </aside>
 
-      <button class="visually-hidden" id="heroLocateButton" data-i18n="locateNow" type="button">現在地から避難先を確認</button>
+      <button class="visually-hidden" id="heroLocateButton" type="button">現在地から避難先を確認</button>
     </section>
 
     <section class="guidance-section screen-section" id="scenario" data-screen="guidance">
       <div class="section-heading compact-heading">
         
-        <h2 data-i18n="guidanceTitle">災害発生時の初期行動</h2>
+        <h2>災害発生時の初期行動</h2>
       </div>
       <div class="guidance-card" id="guidanceCard">
         <div class="guidance-icon" id="guidanceIcon" aria-hidden="true">波</div>
@@ -285,41 +285,41 @@
         </div>
       </div>
       <div class="guide-grid">
-        <article><span data-i18n="networkLabel">1</span><strong>高い場所へ避難する</strong><p data-i18n="locationStatusLabel">海岸や川沿いから離れ、近くの高台や津波のときビルへ移動します。</p></article>
-        <article><span data-i18n="networkLabel">2</span><strong>周囲の人と声をかけ合う</strong><p data-i18n="locationStatusLabel">ひとりではなく、周囲の人と確認しながら避難します。</p></article>
-        <article><span data-i18n="networkLabel">3</span><strong>正確な情報を確認する</strong><p data-i18n="locationStatusLabel">自治体・気象庁・警察・消防などの情報を優先します。</p></article>
-        <article><span data-i18n="networkLabel">4</span><strong>持ち出し品を確認する</strong><p data-i18n="locationStatusLabel">必要なものを持ち、慌てずに安全な方向へ移動します。</p></article>
+        <article><span>1</span><strong>高い場所へ避難する</strong><p>海岸や川沿いから離れ、近くの高台や津波のときビルへ移動します。</p></article>
+        <article><span>2</span><strong>周囲の人と声をかけ合う</strong><p>ひとりではなく、周囲の人と確認しながら避難します。</p></article>
+        <article><span>3</span><strong>正確な情報を確認する</strong><p>自治体・気象庁・警察・消防などの情報を優先します。</p></article>
+        <article><span>4</span><strong>持ち出し品を確認する</strong><p>必要なものを持ち、慌てずに安全な方向へ移動します。</p></article>
       </div>
     </section>
 
     <section class="feature-section screen-section" id="transportSection" data-screen="transport">
       <div class="feature-header">
-        <div><span class="section-kicker">STATUS</span><h2 data-i18n="guidanceTitle">交通</h2></div>
-        <span class="demo-badge" data-i18n="demoData">デモデータ</span>
+        <div><span class="section-kicker">STATUS</span><h2>交通</h2></div>
+        <span class="demo-badge">デモデータ</span>
       </div>
-      <p class="feature-lead" data-i18n="transportLead">JR・江ノ電などの運行状況を表示し、運休時には駅への集中を避ける判断材料にします。</p>
+      <p class="feature-lead">JR・江ノ電などの運行状況を表示し、運休時には駅への集中を避ける判断材料にします。</p>
       <div class="transport-grid" id="transportList"></div>
       <div class="feature-actions">
-        <button class="primary-button inline-button" id="transportDemoButton" data-i18n="toggleTransportDemo" type="button">切替</button>
+        <button class="primary-button inline-button" id="transportDemoButton" type="button">切替</button>
         <button class="secondary-button inline-button" type="button" data-screen-target="map">戻る</button>
       </div>
-      <div class="implementation-note"><strong>実装方針</strong><span data-i18n="networkLabel">現在はデモデータ。最終構成では公共交通オープンデータ等のAPI連携を想定。</span></div>
+      <div class="implementation-note"><strong>実装方針</strong><span>現在はデモデータ。最終構成では公共交通オープンデータ等のAPI連携を想定。</span></div>
     </section>
 
     <section class="feature-section screen-section" id="reportSection" data-screen="report">
       <div class="feature-header">
-        <div><span class="section-kicker">REPORT</span><h2 data-i18n="guidanceTitle">道路報告</h2></div>
-        <span class="demo-badge" data-i18n="demoData">試作機能</span>
+        <div><span class="section-kicker">REPORT</span><h2>道路報告</h2></div>
+        <span class="demo-badge">試作機能</span>
       </div>
-      <p class="feature-lead" data-i18n="transportLead">現在地または地図上で地点を指定し、通行不可・倒木・浸水などを報告します。報告地点はルート評価に反映します。</p>
+      <p class="feature-lead">現在地または地図上で地点を指定し、通行不可・倒木・浸水などを報告します。報告地点はルート評価に反映します。</p>
       <p id="reportTrackStatus" class="report-track-status" aria-live="polite">GPSで現在地を取得すると軌跡記録を開始します。青線が移動軌跡、薄青の帯が軌跡から左右50mの投稿可能範囲です。</p>
       <form class="report-form" id="reportForm">
-        <label><span data-i18n="networkLabel">種類</span><select id="reportType"><option value="blocked">通行不可</option><option value="flooded">道路冠水</option><option value="debris">倒木・瓦礫</option><option value="crowded">著しい混雑</option></select></label>
-        <label><span data-i18n="networkLabel">補足</span><input id="reportNote" maxlength="80" placeholder="例：倒木で歩道が塞がれている"></label>
+        <label><span>種類</span><select id="reportType"><option value="blocked">通行不可</option><option value="flooded">道路冠水</option><option value="debris">倒木・瓦礫</option><option value="crowded">著しい混雑</option></select></label>
+        <label><span>補足</span><input id="reportNote" maxlength="80" placeholder="例：倒木で歩道が塞がれている"></label>
         <div class="report-coordinates"><label>緯度<input id="reportLat" inputmode="decimal"></label><label>経度<input id="reportLng" inputmode="decimal"></label></div>
         <div class="feature-actions">
-          <button class="secondary-button inline-button" id="reportUseCurrentButton" data-i18n="useCurrentReport" type="button">現在地</button>
-          <button class="secondary-button inline-button" id="reportPickMapButton" data-i18n="pickReportMap" type="button">地図指定</button>
+          <button class="secondary-button inline-button" id="reportUseCurrentButton" type="button">現在地</button>
+          <button class="secondary-button inline-button" id="reportPickMapButton" type="button">地図指定</button>
           <button class="primary-button inline-button" type="submit">登録</button>
         </div>
       </form>
@@ -328,13 +328,13 @@
 
     <section class="feature-section screen-section" id="notificationsSection" data-screen="notifications">
       <div class="feature-header">
-        <div><span class="section-kicker">NOTICE</span><h2 data-i18n="guidanceTitle">通知</h2></div>
-        <span class="demo-badge" data-i18n="demoData">試作機能</span>
+        <div><span class="section-kicker">NOTICE</span><h2>通知</h2></div>
+        <span class="demo-badge">試作機能</span>
       </div>
       <div class="notification-list" id="notificationList"></div>
       <div class="jma-test-panel">
         <h3>気象庁連携・Push通知検証</h3>
-        <p data-i18n="locationStatusLabel">公式情報はサーバーで定期取得します。テストは訓練用XMLを使い、実際の警報とは区別します。</p>
+        <p>公式情報はサーバーで定期取得します。テストは訓練用XMLを使い、実際の警報とは区別します。</p>
         <p id="jmaStatus" aria-live="polite">接続確認中…</p>
         <div class="feature-actions"><button class="primary-button inline-button" type="button" id="jmaSubscribe">この端末でPush通知を有効にする</button><button class="secondary-button inline-button" type="button" id="jmaRefresh">監視状況を更新</button></div>
         <label for="jmaAdminToken">管理者トークン（PC内の admin_token.txt）</label>
@@ -343,7 +343,7 @@
         <select id="jmaFixture"><option value="kamakura_warning.xml">① 鎌倉市の警報発表</option><option value="other_city.xml">② 他市のみ（通知しない）</option><option value="kamakura_update.xml">③ 鎌倉市の警報更新</option><option value="kamakura_cancel.xml">④ 鎌倉市の警報解除</option><option value="kamakura_old.xml">⑤ 古い電文（通知しない）</option><option value="kamakura_invalid.xml">⑥ 不正XML（通知しない）</option></select>
         <div class="feature-actions"><button class="primary-button inline-button" type="button" id="jmaRunTest">訓練XMLを読み込んでPush送信</button><button class="secondary-button inline-button" type="button" id="jmaResetTest">テスト履歴を初期化</button></div>
         <div class="feature-actions"><button class="primary-button inline-button" type="button" id="jmaOfficialNext">公式サンプルXMLを1件再生・テストPush送信</button><button class="secondary-button inline-button" type="button" id="jmaOfficialReset">公式XML再生を初期化</button></div>
-        <p data-i18n="locationStatusLabel">全8件を時系列で再生します。通知には必ず「訓練・テスト」と表示され、実際の警報通知には使用しません。</p>
+        <p>全8件を時系列で再生します。通知には必ず「訓練・テスト」と表示され、実際の警報通知には使用しません。</p>
         <pre id="jmaOfficialResult" class="jma-test-result" aria-live="polite">公式サンプルXMLの再生は未実施です。</pre>
         <p id="jmaLastTest" aria-live="polite"></p><pre id="jmaTestResult" class="jma-test-result" aria-live="polite">まだテストしていません。</pre>
         <p class="jma-test-note">※「訓練」と明示したテスト通知です。実災害の判断には使用しないでください。iPhoneではホーム画面に追加したPWAから通知を許可してください。</p>
@@ -354,26 +354,26 @@
 
     <section class="feature-section screen-section" id="offlineSection" data-screen="offline">
       <div class="feature-header">
-        <div><span class="section-kicker">OFFLINE</span><h2 data-i18n="guidanceTitle">オフライン</h2></div>
+        <div><span class="section-kicker">OFFLINE</span><h2>オフライン</h2></div>
         <span class="demo-badge" id="offlineNetworkBadge">オンライン</span>
       </div>
       <div class="offline-status-grid">
-        <article><span class="feature-icon">PWA</span><strong>アプリ本体</strong><p data-i18n="locationStatusLabel">Service WorkerでHTML・CSS・JavaScript・Leafletを端末へ保存します。</p></article>
-        <article><span class="feature-icon">地</span><strong>鎌倉市全域地図</strong><p data-i18n="locationStatusLabel">初回オンライン時に鎌倉市の道路・鉄道・河川・地名を取得し、IndexedDBへ保存します。</p></article>
-        <article><span class="feature-icon">経</span><strong>端末内 A* 経路探索</strong><p data-i18n="locationStatusLabel">通信断後も保存済み道路ネットワーク上で新しい徒歩ルートを端末内計算します。</p></article>
+        <article><span class="feature-icon">PWA</span><strong>アプリ本体</strong><p>Service WorkerでHTML・CSS・JavaScript・Leafletを端末へ保存します。</p></article>
+        <article><span class="feature-icon">地</span><strong>鎌倉市全域地図</strong><p>初回オンライン時に鎌倉市の道路・鉄道・河川・地名を取得し、IndexedDBへ保存します。</p></article>
+        <article><span class="feature-icon">経</span><strong>端末内 A* 経路探索</strong><p>通信断後も保存済み道路ネットワーク上で新しい徒歩ルートを端末内計算します。</p></article>
       </div>
       <section class="offline-pack-card" aria-labelledby="offlinePackHeading">
         <div class="offline-pack-title">
           <div><strong id="offlinePackHeading">鎌倉市全域オフラインパック</strong><span id="offlinePackStatus">確認中</span></div>
           <span class="offline-pack-version">v39</span>
         </div>
-        <p data-i18n="locationStatusLabel">平常時に一度保存しておくと、通信が切れても鎌倉市内の地図・避難先・危険区域・GPS・端末内A*経路探索を利用できます。</p>
+        <p>平常時に一度保存しておくと、通信が切れても鎌倉市内の地図・避難先・危険区域・GPS・端末内A*経路探索を利用できます。</p>
         <div class="offline-pack-progress" id="offlinePackProgressWrap" hidden>
           <div><span id="offlinePackProgressText">準備中</span><strong id="offlinePackProgressPercent">0%</strong></div>
           <progress id="offlinePackProgress" max="100" value="0"></progress>
         </div>
         <div class="offline-pack-actions">
-          <button class="primary-button inline-button" id="offlinePanelSaveButton" data-i18n="prepareOffline" type="button">鎌倉市全域を保存</button>
+          <button class="primary-button inline-button" id="offlinePanelSaveButton" type="button">鎌倉市全域を保存</button>
           <button class="secondary-button inline-button" id="offlinePackDeleteButton" type="button">全域データを削除</button>
         </div>
         <small>初回保存時のみ通信が必要です。危険区域の表示用タイルは鎌倉市範囲・ズーム12〜14を保存し、拡大時は保存済み画像を拡大表示します。</small>
@@ -393,31 +393,39 @@
 
     <section class="feature-section screen-section" id="adminSection" data-screen="admin">
       <div class="feature-header">
-        <div><h2 data-i18n="guidanceTitle">総合防災課 管理者デモ</h2></div>
-        <span class="demo-badge" data-i18n="demoData">デモデータ</span>
+        <div><h2>総合防災課 管理者デモ</h2></div>
+        <span class="demo-badge">デモデータ</span>
       </div>
-      <p class="feature-lead" data-i18n="transportLead">避難所の管理は開設ON/OFFに絞り、道路混雑や利用者報告と組み合わせて近くの避難先へ反映する試作です。</p>
+      <p class="feature-lead">避難所の管理は開設ON/OFFに絞り、道路混雑や利用者報告と組み合わせて近くの避難先へ反映する試作です。</p>
       <div class="admin-summary" id="adminSummary"></div>
+      <section class="firebase-review-panel" aria-labelledby="firebaseReviewHeading">
+        <div class="firebase-review-heading">
+          <div><h3 id="firebaseReviewHeading">Firebase投稿の確認・承認</h3><p>直径1km以内に2件以上集まった未承認投稿を範囲ごとに確認できます。</p></div>
+          <button class="secondary-button inline-button" id="refreshFirebaseReportsButton" type="button">更新</button>
+        </div>
+        <p id="firebaseAdminStatus" class="firebase-admin-status" role="status" aria-live="polite">Firebase投稿を読み込み中です。</p>
+        <div id="firebaseReportClusters" class="firebase-report-clusters"><div class="empty-state">読み込み中です。</div></div>
+      </section>
       <div class="feature-actions">
-        <button class="primary-button inline-button" id="congestionDemoButton" data-i18n="toggleCongestionDemo" type="button">混雑</button>
-        <button class="secondary-button inline-button" id="adminResetButton" data-i18n="resetDemo" type="button">初期化</button>
+        <button class="primary-button inline-button" id="congestionDemoButton" type="button">混雑</button>
+        <button class="secondary-button inline-button" id="adminResetButton" type="button">初期化</button>
       </div>
       <div class="admin-shelter-list" id="adminShelterList"></div>
     </section>
 
     <section class="feature-section screen-section" id="systemSection" data-screen="system">
       <div class="feature-header">
-        <div><h2 data-i18n="guidanceTitle">構成</h2></div>
+        <div><h2>構成</h2></div>
       </div>
       <div class="architecture-grid">
-        <article><strong>フロントエンド</strong><p data-i18n="locationStatusLabel">HTML / CSS / JavaScript</p></article>
-        <article><strong>地図</strong><p data-i18n="locationStatusLabel">Leaflet / OpenStreetMap</p></article>
-        <article><strong>現在地</strong><p data-i18n="locationStatusLabel">Geolocation API</p></article>
-        <article><strong>オンライン経路</strong><p data-i18n="locationStatusLabel">Valhalla / OSRM系歩行者ルーティング</p></article>
-        <article><strong>端末内保存</strong><p data-i18n="locationStatusLabel">IndexedDB / Cache API / Service Worker</p></article>
-        <article><strong>バックエンド想定</strong><p data-i18n="locationStatusLabel">Python / Flask / MySQL / SQLAlchemy</p></article>
-        <article><strong>オフライン経路</strong><p data-i18n="locationStatusLabel">鎌倉市全域道路ネットワーク / 端末内 A*</p></article>
-        <article><strong>オフラインデータ</strong><p data-i18n="locationStatusLabel">OpenStreetMap道路 / 国土地理院避難場所・危険区域 / IndexedDB</p></article>
+        <article><strong>フロントエンド</strong><p>HTML / CSS / JavaScript</p></article>
+        <article><strong>地図</strong><p>Leaflet / OpenStreetMap</p></article>
+        <article><strong>現在地</strong><p>Geolocation API</p></article>
+        <article><strong>オンライン経路</strong><p>Valhalla / OSRM系歩行者ルーティング</p></article>
+        <article><strong>端末内保存</strong><p>IndexedDB / Cache API / Service Worker</p></article>
+        <article><strong>バックエンド想定</strong><p>Python / Flask / MySQL / SQLAlchemy</p></article>
+        <article><strong>オフライン経路</strong><p>鎌倉市全域道路ネットワーク / 端末内 A*</p></article>
+        <article><strong>オフラインデータ</strong><p>OpenStreetMap道路 / 国土地理院避難場所・危険区域 / IndexedDB</p></article>
       </div>
       <div class="feature-actions"><button class="secondary-button inline-button" type="button" data-screen-target="map">戻る</button></div>
     </section>
@@ -425,9 +433,9 @@
   </main>
 
   <footer class="site-footer">
-    <p data-i18n="locationStatusLabel">鎌倉市向け災害避難支援システム開発プロジェクト</p>
-    <p data-i18n="locationStatusLabel">※授業発表用プロトタイプ。実際の避難判断には使用しないでください。</p>
-    <p data-i18n="locationStatusLabel">災害リスク情報：<a href="https://disaportal.gsi.go.jp/" target="_blank" rel="noopener">ハザードマップポータルサイト</a></p>
+    <p>鎌倉市向け災害避難支援システム開発プロジェクト</p>
+    <p>※授業発表用プロトタイプ。実際の避難判断には使用しないでください。</p>
+    <p>災害リスク情報：<a href="https://disaportal.gsi.go.jp/" target="_blank" rel="noopener">ハザードマップポータルサイト</a></p>
   </footer>
 
   <button class="back-to-top" id="backToTopButton" type="button" aria-label="ページ上部へ戻る">↑</button>
@@ -454,6 +462,7 @@
 </script>
 </body>
 </html>
+
 
 
 

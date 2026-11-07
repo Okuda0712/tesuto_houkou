@@ -884,3 +884,21 @@ a{color:inherit}
 /* Report-track notice retained from the existing project */
 .report-track-status{margin:10px auto;padding:9px 12px;max-width:980px;background:#edf3f6;border-left:3px solid #376a8a;color:#294b63;font-size:.78rem;line-height:1.5}
 
+
+/* Firebase clustered report review */
+.firebase-review-panel{margin:16px auto;padding:16px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--navy);width:min(1080px,100%)}
+.firebase-review-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.firebase-review-heading h3{margin:0;font-size:1rem;color:var(--navy-dark)}
+.firebase-review-heading p{margin:5px 0 0;color:var(--sub);font-size:.8rem}
+.firebase-admin-status{margin:12px 0;color:var(--sub);font-size:.8rem}
+.firebase-report-clusters{display:grid;gap:10px}
+.firebase-cluster-card{padding:13px;background:#f8fafb;border:1px solid #d4dde1;border-left:4px solid #d2a33a}
+.firebase-cluster-card.is-approved{border-left-color:var(--green)}
+.firebase-cluster-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.firebase-cluster-head strong{font-size:.9rem}
+.firebase-cluster-meta{color:var(--sub);font-size:.75rem}
+.firebase-cluster-items{display:grid;gap:6px;margin:10px 0 0;padding:0;list-style:none}
+.firebase-cluster-items li{padding:8px 10px;background:#fff;border:1px solid #e2e6e8;font-size:.78rem}
+.firebase-cluster-items small{display:block;margin-top:3px;color:var(--sub)}
+.firebase-cluster-approve{margin-top:10px}
+.firebase-cluster-wait{color:#6d5a28;font-size:.75rem}
